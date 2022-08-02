@@ -29,7 +29,7 @@
                         <div class="col-md-12 form-group receipt">
                             <div class="col-md-6"  >
                                 <label>Receipt</label>
-                                <input type="text" class="form-control receiptInput" id="receipt[]" name="receipt[]"  placeholder="" required >
+                                <input type="text" class="form-control receiptInput" id="receipt[]" name="receipt[]"  placeholder=""  >
                             </div>
                             <div class="col-md-6">
                                 <div class='row'>

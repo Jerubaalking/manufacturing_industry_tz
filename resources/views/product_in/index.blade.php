@@ -236,7 +236,8 @@
                     mat_val += parseInt(batch.material_value);
                     $('#manufacture_date').val(batch.manufacture_date);
                 }
-            }
+            }  
+            
             $('#batch_value').val(mat_val);          
         }
         function get_process_batches(){
@@ -255,30 +256,14 @@
             })
         }
         function populateCurrentstock(prev){
-            
             var id= $(`.selectProduct_id${prev}`).val();
-            
-            var products = JSON.parse('<?php echo $products ?>')
-            var products_in = JSON.parse('<?php echo $products_in ?>')
-            var products_out = JSON.parse('<?php echo $products_out ?>')
-            var categories = JSON.parse('<?php echo $cat ?>')
-            var selectedProductInQtySum = 0;
-            var selectedProductOutQtySum = 0;
-            // map to get total
-            products_in.map(function(data){
-                console.log(data, id)
-                if(data.product_id == id){
-                selectedProductInQtySum += data.qty
-                }
+            $.ajax({
+                      url :'check_stock/'+id,
+                      success : function(html) {
+                         $(`.inputStock${prev}`).val(html.data[0].available)
+                       },
             });
-            products_out.map(function(data){
-                if(data.product_id == id){
-                    selectedProductOutQtySum =+ data.qty
-                }
-            });
-            var stockAvailable = selectedProductInQtySum-selectedProductOutQtySum;
-            console.log("product_in::",stockAvailable, selectedProductInQtySum,selectedProductOutQtySum, products_in);
-            $(`.inputStock${prev}`).val(stockAvailable);
+            // $(`.inputStock${prev}`).val(stockAvailable);
                   
         }
         
@@ -323,9 +308,9 @@
                     $('#qty').val("");
            
                      $.ajax({
-                      url :'get_stock/'+id,
+                      url :'check_stock/'+id,
                       success : function(html) {
-                         $('#current_stock').val(html.data[0].stock)
+                         $('#current_stock').val(html.data[0].available)
                        },
                  
                   });
@@ -351,9 +336,9 @@
               $('#qty').val("");
             
               $.ajax({
-                       url :'get_stock/'+id,
+                       url :'check_stock/'+id,
                        success : function(html) {
-                          $('#current_stock').val(html.data[0].stock)
+                          $('#current_stock').val(html.data[0].available)
                         },
                   
                    });

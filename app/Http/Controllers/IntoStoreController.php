@@ -99,6 +99,7 @@ class IntoStoreController extends Controller
                     'qty'=>$qty[$i],
                     'unit_price'=>$unit_cost,
                     'cost'=>$unit_cost*$qty[$i],
+                    'status' =>'in',
                     'comments' =>$comments[$i],
                     'receipt' =>$receipt[$i],
                     'date'=>$date,
@@ -147,7 +148,7 @@ class IntoStoreController extends Controller
                 //     $batch = User::where('user_code', $code)->first();
                 // }
                 // while(!empty($user_code));
-            foreach ($qty as $i=>$val){
+             foreach ($qty as $i=>$val){
                 $material = MaterialModel::find($material_id[$i]);
                 $unit_cost = $material->unit_cost;
                 $form_data1[] = array(
@@ -155,6 +156,7 @@ class IntoStoreController extends Controller
                     'qty'=>$qty[$i],
                     'unit_price'=>$unit_cost,
                     'cost'=>$unit_cost*$qty[$i],
+                    'status'=>'process',
                     'comments' =>$comments[$i],
                     'date'=>$date,
                     'batch_number'=> $batch_number,
@@ -361,14 +363,7 @@ class IntoStoreController extends Controller
             ->addColumn('action', function($into_store){
                 return '
                 <div class="btn-group" style="width:100%">
-                   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                       Action <span class="caret"></span>
-                   </button>
-                   <ul class="dropdown-menu">
-                   <li>
-                      <li><a onclick="deleteData('. $into_store->id .')" class="btn btn-danger btn-xs" style="color:white"><i class="glyphicon glyphicon-trash" style="color:white"></i> Delete</a></li>
-                       <li><a href="/sales_info/'.$into_store->id .'" class="btn btn-success btn-xs more_details" style="color:white" ><i class="glyphicon glyphicon-eye-open" style="color:white"></i>More Details</a></li>
-                   </ul>
+                 <a onclick="deleteData('. $into_store->id .')" class="btn btn-danger btn-xs" style="color:white"><i class="glyphicon glyphicon-trash" style="color:white"></i> Delete</a>
                </div> ';
             })
             ->rawColumns(['qty','symbol','action'])->make(true);
@@ -381,8 +376,6 @@ class IntoStoreController extends Controller
                        Action <span class="caret"></span>
                    </button>
                    <ul class="dropdown-menu">
-                   <li>
-                       <li><a href="/sales_info/'.$into_store->id .'" class="btn btn-success btn-xs more_details" style="color:white" ><i class="glyphicon glyphicon-eye-open" style="color:white"></i>More Details</a></li>
                    </ul>
                </div> ';
             })

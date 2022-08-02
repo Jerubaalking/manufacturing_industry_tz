@@ -11,7 +11,7 @@
                                 <a class="js-acc-btn" style="color:black;" href="#">{{ \Auth::user()->name  }}</a>
                             </div>
                         </button>
-                        <div class="dropdown-menu ">
+                        <div class="dropdown-menu js-dropdown">
                             <button class="info clearfix">
                                 <div class="image">
                                     <a href="#">

@@ -150,19 +150,20 @@
       <div class="box" style="margin-top:80px;">
     
       <center><h1 style="color:red;"><strong>MISANA HOME BAKERY</strong></h1></center>
-      <center><h3 style="margin-left:30px;margin-top:-10px;"><strong style="color:green">Material  Report <br><?php echo $status?> <p style="color:red">From</p><?php echo $from; ?><p style="color:red">To</p><?php echo $to; ?></strong></h3></center>
+      <center><h3 style="margin-left:30px;margin-top:-10px;"><strong style="color:green">Material  Report <br> Stock-<?php echo $status ?><p style="color:red">From</p><?php echo $from; ?><p style="color:red">To</p><?php echo $to; ?></strong></h3></center>
 
      
 
         <table class="table table table-striped">
         <thead>
             <tr>
-                   <th scope="col" class="border-0 pl-0">Date</th>
                    <th scope="col" class="border-0 pl-0">Batch</th>
+                   <th scope="col" class="border-0 pl-0">Status</th>
                    <th scope="col" class="border-0 pl-0">Material</th>
+                   <th scope="col" class="border-0 pl-0">Category</th>
                    <th scope="col" class="border-0 pl-0">Quantity</th>
                    <th scope="col" class="border-0 pl-0">Cost</th>
-                   <th scope="col" class="border-0 pl-0">Entry</th>
+                   <th scope="col" class="border-0 pl-0">Entry-Date</th>
                    
                 </tr>
             </thead>
@@ -175,17 +176,20 @@
                 $totalQty += $i->qty;
                 ?>
                 <tr>
-                <td class="pl-0">
-                      <?php  $i->date?>
-                     </td>
                      <td class="pl-0">
                          <?php  echo $i->batch_number?>
+                     </td>
+                     <td class="pl-0">
+                         <?php  echo $i->status?>
                      </td>
                      <td class="pl-0">
                          <?php  echo $i->name?>
                      </td>
                      <td class="pl-0">
-                         <?php echo $i->qty?>
+                         <?php  echo $i->category_name?>
+                     </td>
+                     <td class="pl-0">
+                         <?php echo $i->qty.''.$i->symbol?>
                      </td>
                      <td class="pl-0">
                          <?php  echo $i->cost?>
@@ -200,6 +204,7 @@
                       <td >
                        Total Amount:
                         </td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td><?php echo number_format($totalQty,2) ?></td>

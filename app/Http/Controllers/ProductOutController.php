@@ -107,7 +107,6 @@ class ProductOutController extends Controller
         $sales_by=$request->sales_by;
         $payment_method=$request->payment_method;
         $product_id=$request->product_id;
-
         // $return_qty='0';
         // $return_price='0';
         // $return_amt='0';

@@ -81,7 +81,6 @@
                 <thead>
                 <tr>
                   
-                    <th>Batch Number</th>
                     <th>Item Name</th>
                     <th>QTY</th>
                     <th>Date</th>
@@ -196,7 +195,6 @@
             ajax:  "{{ url('apiProducts_in') }}",
             columns: [
              
-                {data: 'batch_number', name: 'batch_number'},
                 {data: 'products_name', name: 'products_name'},
                 {data: 'qty', name: 'qty'},
                 {data: 'date_in', name: 'date_in'},
@@ -212,99 +210,34 @@
             $('input[name=_method]').val('POST');
             $('#modal-form').modal('show');
          
-            $('.modal-title').text('Add Finished Products');
+            $('.modal-title').text('Add Products In');
            
-            $('#materials').html('');
-            get_process_batches();
-            populateModal();
-           
-        }
-        function populateModal(){
-            $('#batch_notify').removeClass('text-danger');
-            $('#batch_notify').removeClass('text-success');
-            $('#batch_notify').text('');
-            $("#indexer").val(0)
+            var id=$('#category_id').val();
+              $.ajax({
+                       url :'get_item/'+id,
+                       success : function(html) {
+                
+                        $.each(html.data, function(i, item){
+                        $('#product_id').append(  
+                            '<option value="'+html.data[i].id+'">'+html.data[i].product_name+'</option>' 
+                            );
+                       });
+                       
+            var id=$('#product_id').val();
 
-            var id=$('#batch_number').val();
-            
-            var allBatches = JSON.parse('<?php echo $batches ?>');
-            var mat_val = 0;
-            console.log(allBatches);
-            for(let batch of allBatches){
-                if(batch.batch_number == id){
-                    console.log(batch.material_value, id, batch.manufacture_date);
-                    mat_val += batch.material_value;
-                    $('#manufacture_date').val(batch.manufacture_date);
-                }
-            }  
-            
-            $('#batch_value').val(mat_val);          
-        }
-        function get_process_batches(){
-            $('#batch_number').html('');
-            $.ajax({
-                    url:"{{ url('get_process_batches') }}",
-                    success: function(html) {
-                        var allBatches = JSON.parse( JSON.stringify(html));
-                        console.log(allBatches);
-                                $('#batch_number').append('<option value="" disabled selected>--select batch number--</option>');
-                        for(let batch of allBatches){
-                                $('#batch_number').append('<option value="'+batch.batch_number+'">'+batch.batch_number+'</option>'); 
-                                
-                        }  
-                    }
-            })
-        }
-        function populateCurrentstock(prev){
-            
-            var id= $(`.selectProduct_id${prev}`).val();
-            
-            var products = JSON.parse('<?php echo $products ?>')
-            var products_in = JSON.parse('<?php echo $products_in ?>')
-            var products_out = JSON.parse('<?php echo $products_out ?>')
-            var categories = JSON.parse('<?php echo $cat ?>')
-            var selectedProductInQtySum = 0;
-            var selectedProductOutQtySum = 0;
-            // map to get total
-            products_in.map(function(data){
-                console.log(data, id)
-                if(data.product_id == id){
-                selectedProductInQtySum += data.qty
-                }
-            });
-            products_out.map(function(data){
-                if(data.product_id == id){
-                    selectedProductOutQtySum =+ data.qty
-                }
-            });
-            var stockAvailable = selectedProductInQtySum-selectedProductOutQtySum;
-            console.log("product_in::",stockAvailable, selectedProductInQtySum,selectedProductOutQtySum, products_in);
-            $(`.inputStock${prev}`).val(stockAvailable);
-                  
-        }
-        
-        function populateProducts(prev){
-            // var tr = document.querySelector(`.selectCategory_id${prev}`);
            
-            var id= $(`.selectCategory_id${prev}`).val();
-            
-            var products = JSON.parse('<?php echo $products ?>')
-            var products_in = JSON.parse('<?php echo $products_in ?>')
-            var categories = JSON.parse('<?php echo $cat ?>')
-            console.log("product_in::",products_in, "categories::", categories, 'products::', products);
-            $(`.selectProduct_id${prev}`).html('');
-            console.log(id)
-                for(let product of products){
-                    if(product.category_id == id){
-                        console.log('products::', product);
-                        
-                        $(`.selectProduct_id${prev}`).append(`<option value='${product.id}'>${product.product_name}</option>`);
-            //             // console.log(product_in.material_value, id, product_in.manufacture_date);
-            //             // $('#batch_value').val(product_in.material_value); 
-            //             // $('#manufacture_date').text(product_in.manufacture_date); 
-                    }
-                } 
-                populateCurrentstock(prev);          
+             $.ajax({
+                      url :'get_stock/'+id,
+                      success : function(html) {
+                         $('#current_stock').val(html.data[0].stock)
+                       },
+                 
+                  });
+                        },
+                  
+                   });
+
+           
         }
         $('#category_id').on("change",function(){
         
@@ -340,7 +273,6 @@
                    });
             
         })
-
         $('#product_id').on("keyup change",function(){
 
             if(Number($('#current_stock').val()==0)){       
@@ -360,111 +292,6 @@
                    });
         })
   
-// $('#materials').delegate('#material_id','click',
-
-    const onChangeElement = (qSelector, cb)=>{
-    var target = document.querySelector(qSelector);
-    if(target){
-        const config = {
-            attributes:true,
-            childList:true,
-            characterData: true
-        }
-        const callback = function(mutationsList, observer){
-            var allObjects = [];
-            var count = target.children.length;
-                // console.log(target.children.length);
-                
-                    for(var i = 0; i<target.children.length;i++){
-                        allObjects.push((($(target.children[i]).children()).children()).find('select'))
-                        console.log((($(target.children[i]).children()).children()).find('select'));
-                    }
-            
-            // target.children.forEach(mutation => {
-            //     console.log("mutation:: ",mutation);
-            //     // count = $(mutation.previousSibling.childElementCount);
-            //     // allObjects.push(($(target.children[]).children()).children())
-            // });
-            
-            cb(allObjects, count, observer);
-            observer.disconnect();
-        };
-        var observer = new MutationObserver(callback)
-        observer.observe(target, config);
-        
-
-    }else{
-        console.log('onChangeElement:Invalid Selector');
-    }
-    }
-
-$('#more_charge').on('click', function(){
-    var prev = parseInt($("#indexer").val())+1;
-    
-    var id=$('#batch_number').val();
-
-    console.log(prev);
-    var tr = $(this).parent().parent();
-        var html = '';
-        html += '<span class="col-md-12" id="row'+prev +'"><div class="row" style="margin-top:5px;">';
-        html += '<div class="col-md-2">';
-        html +=  '<label>Categories</label><br>';
-        html += '<select onchange="populateProducts('+prev+')" name="category_id[]" id="category_id[]" class="selectCategory_id'+prev+' form-control" style="width:100%;"> @foreach($cat as $x)<option value="{{$x->id}}">{{$x->cat_name}}</option>@endforeach</select>';
-        html += '<span class="help-block with-errors"></span>';
-        html += '</div>'; 
-        html += '<div class="col-md-4">';
-        html +=  '<label>Product</label><br>';
-        html += '<select onchange="populateCurrentstock('+prev+')" name="product_id[]" id="product_id[]" class="selectProduct_id'+prev+' form-control" style="width:100%;"> </select>';
-        html += '<span class="help-block with-errors"></span>';
-        html += '</div>';
-        html += '<div class="col-md-2">';
-        html +=  '<label>Quantity</label>';
-        html += '<input type="text" name="qty[]"  id="qty[]" class="form-control inputQty'+prev+'" required placeholder="qty" value="1"/>';
-        html += '</div>';
-        html += '<div class="col-md-2">';
-        html += '<label>Current Stock</label>';
-        html += '<input type="text" class="form-control inputStock'+prev+'" name="current_stock[]" id="current_stock[]"  readonly>';
-        html += '</div>';
-
-        html += '<div class="col-md-2">';
-        html +=  '<label>action</label><br>';
-        
-            html += '<button type="button" name="remove" id="'+prev +'" class="btn btn-danger btn-xs remove">-</button>';
-        
-        html += '</div>';
-        html += '</div></div><br /></span>';
-        if(id){ 
-            $('#batch_notify').removeClass('text-danger');
-            $('#batch_notify').addClass('text-success');
-            $('#batch_notify').text( ' '+(prev)+' slot populated');
-            $('#indexer').attr('value', prev);
-            $('#materials').append(html);
-            populateProducts(prev);
-            populateCurrentstock(prev);
-        }else{
-            $('#batch_notify').text(' No product batch in process to finished goods!');
-        }
-    
-    // tr.find(`.selectMaterial_id${prev}`).select2();
-});
-$('#materials').delegate('.remove', 'click', function(){
-      
-      var tr = $(this).parent().parent();
-      
-    var prev = parseInt($("#indexer").val())-1;
-    $('#indexer').attr('value', prev);
-    $('#batch_notify').removeClass('text-success');
-    $('#batch_notify').addClass('text-danger');
-    $('#batch_notify').text( ' '+(prev)+' slot remaining!');
-      // tr.find(".amt").html( tr.find("#qty").val() * tr.find("#price").val() );
-      // calculate(0,0);
-      var row_no = $(this).attr("id");
-      $('#row'+row_no).html('');
-      $('#row'+row_no).remove();
-      // tr.find(".amt").html( tr.find("#qty").val() * tr.find("#price").val() );
-      //     calculate(0,0);
-  });
-
         function editForm(id) {
             save_method = 'edit';
             $('input[name=_method]').val('PATCH');

@@ -28,23 +28,9 @@ class TaskController extends Controller
         $empo=DB::table('employee')
                 ->get();
 
-        $products=DB::table('products')
-                    // ->whereNotIn('stock',[0])
-                    ->get();
-        $product = array();
-        foreach ($products as $data) {
-            $product_in=DB::table('product_in')
-            ->where('id', $data->id)
-            ->sum('qty');
-            $product_sales =DB::table('sales')
-            ->where('id', $data->id)
-            ->sum('qty');
-            $available = $product_in - $product_sales;
-            $data->available = $available;
-            array_push($product, $data);
-        }
-       
-                
+        $product=DB::table('products')
+                    //->whereNotIn('stock',[0])
+                     ->get();
 
         $account=DB::table('account')
                     ->where('account_group','=','Income')

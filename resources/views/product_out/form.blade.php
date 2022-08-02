@@ -25,16 +25,17 @@
              
                       <hr>
                       </hr>
-                      <div class="">
+                      <div class="row">
                       <div class="col-md-12">
                    
                        <span id="personal"></span>
                       </div>
                       </div>
                       <hr></hr>
-                      <div class="">
+                      <div class="row">
                       <div class='col-md-12'>
                       <span id="expensive"></span>
+                       </span>
                       </div>
                        </div>
                        <hr></hr>

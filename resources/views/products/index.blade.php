@@ -49,7 +49,6 @@
                 <thead>
                 <tr>
                   
-                    <th>Batch Number</th>
                     <th>Category Name</th>
                     <th>Item Name</th>
                     <th>Stock</th>
@@ -127,7 +126,6 @@
            
             ajax: "{{ url('/apiProducts') }}",
             columns: [
-                {data: 'batch_number', name: 'butch_number'},
                 {data: 'cat_name', name: 'cat_name'},
                 {data: 'product_name', name: 'product_name'},
                 {data: 'stock', name: 'stock'},
@@ -143,8 +141,6 @@
             $('#modal-form').modal('show');
             $('#modal-form form')[0].reset();
             $('.modal-title').text('Add Products');
-            $('#materials').html('');
-            add_expensive_row();
         }
 
       $("#price").keyup(function(){  
@@ -159,19 +155,6 @@
       $("#tlitre").val(Number($("#litre").val())*Number($("#stock").val()));
       }); 
 
-//       $('#add_btn').on('click',function(){
-    
-//     save_method = "add";
-//     $('input[name=_method]').val('POST');
-//     $('#modal-form').modal('show');
-//     $('#form-item')[0].reset();
-//     $('.modal-title').text('Stock Material');
-//     getBatch();
-//     $('#materials').html('');
-//     add_expensive_row();
-// });
-
-
   
         function editForm(id) {
             save_method = 'edit';
@@ -184,7 +167,6 @@
                     $('#modal-form').modal('show');
                     $('.modal-title').text('Edit Products');
                     $('#id').val(html.data.id);
-                    $('#batch_number').val(html.data.batch_number);
                     $('#stock').val(html.data.stock);
                     $('#weight').val(html.data.weight);
                     $('#product_name').val(html.data.product_name);
@@ -243,6 +225,8 @@
                     $.ajax({
                         url : url,
                         type : "POST",
+                        //hanya untuk input data tanpa dokumen
+//                      data : $('#modal-form form').serialize(),
                         data: new FormData($("#modal-form form")[0]),
                         contentType: false,
                         processData: false,

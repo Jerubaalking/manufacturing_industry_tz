@@ -159,25 +159,24 @@ class ProductController extends Controller
      */
     public function  checkStock($id)
     {
-        $data=DB::table('products')->where('id', '=', $id)->get();
+        
+        //$data=DB::table('products')->where('id', '=', $id)->get();
         $products=DB::table('products')
                 ->where('id', '=', $id)
                 ->get();
         $product = array();
         foreach ($products as $data) {
             $product_in=DB::table('product_in')
-            ->where('product_id', $id)
-            ->sum('qty');
+            ->where('product_id','=', $data->id)->sum('qty');
             $product_sales =DB::table('sales')
-            ->where('product_id', $id)
-            ->sum('qty');
+            ->where('product_id','=', $data->id)->sum('qty');
             $available = $product_in - $product_sales;
             $data->available = $available;
             
             array_push($product, $data);
         }
 
-        return response()->json(['data' => $product]);  
+        return response()->json(['data' => $product]);    
     }
 
 

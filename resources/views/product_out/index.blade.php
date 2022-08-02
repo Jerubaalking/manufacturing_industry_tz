@@ -400,6 +400,9 @@ $(document).on('click','.reset',function(){
    var tr = $(this).parent().parent();
      var html = '';
       html += '<span id="row'+count_charge +'"><div class="row">';
+    //   html += '<div class="col-md-3">';
+    //   html += '<input type="text" name="title[]" id="title'+count_charge+'" class="form-control selectpicker" data-live-search="true" required  placeholder="title"></textarea>';
+    //   html += '</div>';
       html += '<div class="col-md-3">';
       html +=  '<label>Items Name</label>';
       html += '<select  name="product_id[]" id="product_id" class="form-control"><option disabled>--select product--</option> @foreach($product as $x)<option value="{{$x->id}}">{{$x->product_name}}</option>@endforeach</select>';
@@ -441,10 +444,10 @@ $(document).on('click','.reset',function(){
 
       tr.find(".amt").html( tr.find("#qty").val() * tr.find("#price").val() );
 				calculate(0,0);
-}
+        }
         var count_charge = 0;
     $(document).on('click', '#more_charge', function(){
-            var tr = $(this).parent().parent(); 
+        var tr = $(this).parent().parent(); 
             var product_id=tr.find("#product_id").val() ;
             $.ajax({
                 url:"check_stock/"+product_id,
@@ -454,11 +457,11 @@ $(document).on('click','.reset',function(){
                 
               }
         
-            });
+         });
         
-        count_charge = count_charge+ 1;
-        add_expensive_row(count_charge);
-        tr.find(".amt").html( tr.find("#qty").val() * tr.find("#price").val() );
+     count_charge = count_charge+ 1;
+    add_expensive_row(count_charge);
+    tr.find(".amt").html( tr.find("#qty").val() * tr.find("#price").val() );
 				calculate(0,0);
       
      });
@@ -468,13 +471,13 @@ $(document).on('click','.reset',function(){
         
         // tr.find(".amt").html( tr.find("#qty").val() * tr.find("#price").val() );
         // calculate(0,0);
-        var row_no = $(this).attr("id");
-        $('#row'+row_no).remove();
-        tr.find(".amt").html( tr.find("#qty").val() * tr.find("#price").val() );
-            calculate(0,0);
+    var row_no = $(this).attr("id");
+     $('#row'+row_no).remove();
+     tr.find(".amt").html( tr.find("#qty").val() * tr.find("#price").val() );
+        calculate(0,0);
      });
      
-    $(document).on('click','.prove',function(){
+     $(document).on('click','.prove',function(){
             var id=$(this).attr("id");
             alert(id);
             swal({
@@ -509,13 +512,13 @@ $(document).on('click','.reset',function(){
                 });
             });
          
-    });
+          });
 
 
 
-    $('#return_qty').on('change',function(){
-            
-    })
+  $('#return_qty').on('change',function(){
+    
+  })
 
 
     function editForm(id) {
@@ -569,14 +572,18 @@ $(document).on('click','.reset',function(){
                html_form += '</div>';
                html_form += '<div class="col-md-2">';
                html_form +=  '<label>Action</label><br>';
-               if(count_charge == '')
-               {
-                    html_form += '<button type="button" name="more_charge" id="more_charge" class="btn btn-success btn-xs">+</button>';
+              if(count_charge == '')
+                {
+               html_form += '<button type="button" name="more_charge" id="more_charge" class="btn btn-success btn-xs">+</button>';
                }
+            //   if (count_charge >=1 )
+            //     {
+            //      html_form += '<button type="button" name="remove" id="'+count_charge +'" class="btn btn-danger btn-xs remove">-</button>';
+            //    }
                else
                 {
-                    html_form += '<button type="button" name="remove" id="'+count_charge +'" class="btn btn-danger btn-xs remove">-</button>';
-                }
+            html_form += '<button type="button" name="remove" id="'+count_charge +'" class="btn btn-danger btn-xs remove">-</button>';
+            }
              html_form += '</div>';
              html_form += '</div></div><br /></span>';    
              $.isNumeric(count_charge)
@@ -597,7 +604,7 @@ $(document).on('click','.reset',function(){
 
     
 
-    $(document).on('click','.pays',function(){
+         $(document).on('click','.pays',function(){
            
          $('#form-payment')[0].reset();
             var id=$(this).attr("id");

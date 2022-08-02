@@ -15,7 +15,7 @@
 @endsection
 @section('content')
     <div class="box">     
-    <h3 class="title-5 m-b-35">Production Material store</h3>  
+    <h3 class="title-5 m-b-35">Material store</h3>  
          <div class="box-body" style="margin-top:-25px;"> 
          <div> 
 
@@ -25,8 +25,8 @@
                                 <div class="col-md-2 form group" style="margin-left:-30px;">
                                     <label>Status</label> <br>
                                     <select onchange="populateTable('apiIntoStore')" class="form-control" name="status" id="status">
-                                        <option value="all">all</option>
-                                        <option value="in">Stock-In</option>
+                                        <!--<option value="all">all</option>-->
+                                        <option value="in" selected>Stock-In</option>
                                         <option value="process">Stock-In Process</option>
                                         <option value="finished">Finished-Process</option>
                                     </select>
@@ -194,7 +194,7 @@
                     {data: 'category_name', name: 'category_name'},
                     {data: 'type', name: 'type'},
                     {data: 'status', name: 'status'},
-                    {data: 'qty', ender: $.fn.dataTable.render.number( ',', '.', 0, 'TZS' ), name: 'qty'},
+                    {data: 'qty', render: $.fn.dataTable.render.number( ',', '.', 0, 'TZS' ), name: 'qty'},
                     {data: 'symbol', name: 'symbol'},
                     {data: 'unit_cost', name: 'unit_cost'},
                     {data: 'sam', name: 'sam'},
@@ -277,7 +277,7 @@
                         //     tcost_out += item.cost
                         // });
                         $('#in_total').html('');
-                        $('#in_total').text(tcost_in.toLocaleString("en-US"));
+                        $('#in_total').text(tcost_in.toLocaleString("en-US"))
                         // $('#out_total').text(tcost_out.toLocaleString("en-US"))
                         console.log(datas, tcost_in);
                     }
@@ -454,10 +454,10 @@
                                 let unit_cost = 0;
                                 datas.map(function(item){
                                     if(item.material_id == ids[i]){
-                                           unit_cost = item.unit_cost;
+                                           unit_cost = parseInt(item.unit_cost);
                                     }
                                 });
-                                totalValue += unit_cost * qtys[i];
+                                totalValue += parseInt(unit_cost) * parseInt(qtys[i]);
                             }
                                 
                                 // totalValue += (qty*unit_cost);
@@ -537,10 +537,10 @@
                         var totalQty = 0;
                         datas.map(function(item){
                             if(item.status == 'in' && item.material_id == id){
-                               totalInQty +=item.qty;
+                               totalInQty +=parseInt(item.qty);
                             }
                             if(item.status == 'process' && item.material_id == id||item.status == 'finished' && item.material_id == id ){
-                               totalOutQty += item.qty;
+                               totalOutQty += parseInt(item.qty);
                             }
                         });
                         var availableQty = totalInQty-totalOutQty;
@@ -786,7 +786,7 @@
             var csrf_token = $('meta[name="csrf-token"]').attr('content');
             swal({
                 title: 'Are you sure?',
-                text: "Delete Input!",
+                text: "Delete Record?",
                 type: 'warning',
                 showCancelButton: true,
                 cancelButtonColor: '#d33',
@@ -807,7 +807,7 @@
                             type: 'success',
                             timer: '1500'
                         })
-                        
+                        populateTable('apiIntoStore');
                         }else{
                             console.log(data)
                             swal({
@@ -882,7 +882,6 @@
                                                 type: 'error',
                                                 timer: '3000'
                                             })
-                                            populateTable('apiIntoStore');
 
                                                 }
                                             }
@@ -920,6 +919,8 @@
                                                 type: 'success',
                                                 timer: '1500'
                                             })
+                                            
+                                            populateTable('apiIntoStore');
                                             }else{
                                                 if(data.message.errorInfo){
                                                     if(data.message.errorInfo[2].includes('Duplicate')){
@@ -980,6 +981,8 @@
                                                 type: 'success',
                                                 timer: '1500'
                                             })
+                                            
+                                            populateTable('apiIntoStore');
                                             }else{
                                                 if(data.message.errorInfo){
                                                     if(data.message.errorInfo[2].includes('Duplicate')){
