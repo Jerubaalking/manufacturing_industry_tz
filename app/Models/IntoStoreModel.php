@@ -26,6 +26,7 @@ class IntoStoreModel extends Model implements Auditable
      */
     protected $fillable = [
         'material_id',
+        'product_id',
         'qty',
         'unit_price',
         'cost',

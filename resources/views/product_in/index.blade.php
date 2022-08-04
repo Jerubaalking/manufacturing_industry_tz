@@ -233,8 +233,13 @@
             for(let batch of allBatches){
                 if(batch.batch_number == id){
                     console.log(batch.material_value, id, batch.manufacture_date);
+                    product_name = batch.product_name;
+                    product_id = batch.product_id;
                     mat_val += parseInt(batch.material_value);
                     $('#manufacture_date').val(batch.manufacture_date);
+                    $('#product_name').val(batch.product_name);
+                    $('#product_id').val(batch.product_id);
+                    populateCurrentstock();
                 }
             }  
             
@@ -255,12 +260,12 @@
                     }
             })
         }
-        function populateCurrentstock(prev){
-            var id= $(`.selectProduct_id${prev}`).val();
+        function populateCurrentstock(){
+            var id= $(`#product_id`).val();
             $.ajax({
                       url :'check_stock/'+id,
                       success : function(html) {
-                         $(`.inputStock${prev}`).val(html.data[0].available)
+                         $(`#available`).val(html.data[0].available)
                        },
             });
             // $(`.inputStock${prev}`).val(stockAvailable);

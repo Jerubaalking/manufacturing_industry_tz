@@ -39,7 +39,9 @@ class IntoStoreController extends Controller
         ->select('materials.*', 'measurements.measurement','measurements.symbol', 'material_categories.category_name','material_categories.type')
         ->get();
 
-        return view('intoStore.index',compact('into_stores', 'materials', 'measurements', 'material_categories', 'batches'));
+        $products = DB::table('products')->get();
+
+        return view('intoStore.index',compact('into_stores', 'materials', 'measurements', 'material_categories', 'batches', 'products'));
     }
 
     public function show(){
@@ -140,6 +142,7 @@ class IntoStoreController extends Controller
                 $qty=$request->input('qty',[]);
                 $comments=$request->input('comments',[]);
                 $date=$request->input('date');
+                $product_id=$request->input('product_id');
                 $batch_number = $request->input('batch_number');
                 // do
                 // {
@@ -159,6 +162,7 @@ class IntoStoreController extends Controller
                     'status'=>'process',
                     'comments' =>$comments[$i],
                     'date'=>$date,
+                    'product_id'=>$product_id,
                     'batch_number'=> $batch_number,
                     'created_at'=> Carbon::now(),
                     'updated_at'=> Carbon::now()
@@ -292,6 +296,7 @@ class IntoStoreController extends Controller
         $end=$request->input('end');
         $start=$request->input('start');
         $status=$request->input('status');
+        $product_id=$request->input('product_id');
         info($status);
         if(!$status){
             $into_store=DB::table('into_store')
@@ -333,28 +338,45 @@ class IntoStoreController extends Controller
         $end=$request->input('end');
         $start=$request->input('start');
         $status=$request->input('status');
-        info($status);
+        $product_id=$request->input('product_id');
         if(!$status){
             $into_store=DB::table('into_store')
             ->whereBetween('into_store.created_at', [$start, $end])
             ->join('materials', 'materials.id', '=', 'into_store.material_id')
-            ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type')
+            ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type', 'products.product_name')
             ->join('measurements', 'measurements.id','=','materials.measurement_id')
             ->join('material_categories', 'material_categories.id','=','materials.material_category_id')
+            ->join('products', 'products.id','=','into_store.product_id')
             ->selectRaw('into_store.qty * materials.unit_cost as sam')
             ->orderBy('created_at', 'DESC')
             ->get();
         }else{
-            $into_store=DB::table('into_store')
-            ->whereBetween('into_store.created_at', [$start, $end])
-            ->where('into_store.status','=',$status)
-            ->join('materials', 'materials.id', '=', 'into_store.material_id')
-            ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type')
-            ->join('measurements', 'measurements.id','=','materials.measurement_id')
-            ->join('material_categories', 'material_categories.id','=','materials.material_category_id')
-            ->selectRaw('into_store.qty * materials.unit_cost as sam')
-            ->orderBy('created_at', 'DESC')
-            ->get();
+            if($status == 'in'){
+                $into_store=DB::table('into_store')
+                ->whereBetween('into_store.created_at', [$start, $end])
+                ->where('into_store.status','=',$status)
+                ->join('materials', 'materials.id', '=', 'into_store.material_id')
+                ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type')
+                ->join('measurements', 'measurements.id','=','materials.measurement_id')
+                // ->join('products', 'products.id','=','into_store.product_id')
+                ->join('material_categories', 'material_categories.id','=','materials.material_category_id')
+                ->selectRaw('into_store.qty * materials.unit_cost as sam')
+                ->orderBy('created_at', 'DESC')
+                ->get();
+            }else{
+                info($status);
+                $into_store=DB::table('into_store')
+                ->whereBetween('into_store.created_at', [$start, $end])
+                ->where('into_store.status','=',$status)
+                ->join('materials', 'materials.id', '=', 'into_store.material_id')
+                ->join('products', 'products.id','=','into_store.product_id')
+                ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type', 'products.product_name')
+                ->join('measurements', 'measurements.id','=','materials.measurement_id')
+                ->join('material_categories', 'material_categories.id','=','materials.material_category_id')
+                ->selectRaw('into_store.qty * materials.unit_cost as sam')
+                ->orderBy('created_at', 'DESC')
+                ->get();
+            }
         }
         
 
@@ -412,16 +434,30 @@ class IntoStoreController extends Controller
                 ->orderBy('created_at', 'DESC')
                 ->get();
             }else{
-                $data=DB::table('into_store')
-                ->whereBetween('into_store.created_at', [$from, $to])
-                ->where('into_store.status','=',$status)
-                ->join('materials', 'materials.id', '=', 'into_store.material_id')
-                ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type')
-                ->join('measurements', 'measurements.id','=','materials.measurement_id')
-                ->join('material_categories', 'material_categories.id','=','materials.material_category_id')
-                ->selectRaw('into_store.qty * materials.unit_cost as sam')
-                ->orderBy('created_at', 'DESC')
-                ->get();
+                if(!$status == "in"){
+                    $data=DB::table('into_store')
+                    ->whereBetween('into_store.created_at', [$from, $to])
+                    ->where('into_store.status','=',$status)
+                    ->join('materials', 'materials.id', '=', 'into_store.material_id')
+                    ->join('products', 'products.id', '=', 'into_store.product_id')
+                    ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type', 'product_name')
+                    ->join('measurements', 'measurements.id','=','materials.measurement_id')
+                    ->join('material_categories', 'material_categories.id','=','materials.material_category_id')
+                    ->selectRaw('into_store.qty * materials.unit_cost as sam')
+                    ->orderBy('created_at', 'DESC')
+                    ->get();
+                }else{
+                    $data=DB::table('into_store')
+                    ->whereBetween('into_store.created_at', [$from, $to])
+                    ->where('into_store.status','=',$status)
+                    ->join('materials', 'materials.id', '=', 'into_store.material_id')
+                    ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type')
+                    ->join('measurements', 'measurements.id','=','materials.measurement_id')
+                    ->join('material_categories', 'material_categories.id','=','materials.material_category_id')
+                    ->selectRaw('into_store.qty * materials.unit_cost as sam')
+                    ->orderBy('created_at', 'DESC')
+                    ->get();
+                }
             }
              $pdf = PDF::loadView('intoStore.exportPDF',compact('from','to','status','data' ));
             

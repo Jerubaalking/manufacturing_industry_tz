@@ -31,10 +31,12 @@ class ProductInController extends Controller
         $batches=DB::table('into_store')
         ->where('status','=', 'process')
         ->join('materials','materials.id','=','into_store.material_id')
+        ->join('products','products.id','=','into_store.product_id')
         ->orderBy('into_store.batch_number', 'DESC')
-        ->select('into_store.batch_number','into_store.qty','materials.unit_cost','into_store.updated_at as manufacture_date')
+        ->select('into_store.batch_number','into_store.product_id','into_store.qty','materials.unit_cost','into_store.updated_at as manufacture_date', 'products.product_name')
         ->selectRaw('(into_store.qty * materials.unit_cost) as material_value')
         ->get();
+        
         $BatchOut=DB::table('into_store')
         ->where('status','=', 'process')
         ->groupBy('batch_number')
@@ -90,17 +92,17 @@ class ProductInController extends Controller
             $product_id = $request->product_id;
             $qty = $request->qty;
             
-            foreach ($qty as $i=>$val){
-                $form_datas[] = array(
+            // foreach ($qty as $i=>$val){
+                $form_datas = array(
                     'batch_number' => $batch_number,
-                    'product_id' => $product_id[$i],
-                    'qty' => $qty[$i],
+                    'product_id' => $product_id,
+                    'qty' => $qty,
                     'date_in' => $date_in,
                     'created_at' =>Carbon::now(),
                     'updated_at' =>Carbon::now(),
             
                 );
-            }
+            // }
         
             $proccess = array(
                 'status' => 'finished',
