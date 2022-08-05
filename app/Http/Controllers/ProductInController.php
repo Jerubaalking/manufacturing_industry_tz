@@ -261,7 +261,7 @@ class ProductInController extends Controller
     public function apiProducts_in(){
         $products=DB::table('products')->join('product_in','product_in.product_id','=','products.id')
         ->select('product_in.*','products.product_name')
-        ->orderBy('product_in.id','ASC')
+        ->orderBy('product_in.id','DESC')
         ->get();
         if(Auth::user()->role=="Superadministrator"){
         return Datatables::of($products)
@@ -271,7 +271,8 @@ class ProductInController extends Controller
            
             ->addColumn('action', function($products){
                 return
-                    '<a onclick="deleteData('. $products->id .')" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i> Delete</a> ';
+                    '<a onclick="materialData(`'.$products->batch_number.'`)" class="btn btn-success btn-xs"><i class="glyphicon glyphicon-edit"></i> materials</a>
+                    <a onclick="deleteData('.$products->id.')" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i> Delete</a> ';
             })
             ->rawColumns(['products_name','supplier_name','action'])->make(true);
 
@@ -284,7 +285,9 @@ class ProductInController extends Controller
        
         ->addColumn('action', function($products){
             return
-                '<a onclick="" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i> Delete</a> ';
+            
+            '<a onclick="materialData('. $products->batch_number .')" class="btn btn-success btn-xs"><i class="glyphicon glyphicon-edit"></i> materials</a>
+            <a onclick="deleteData('. $products->id.')" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i> Delete</a> ';
 
 
 

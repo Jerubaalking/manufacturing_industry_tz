@@ -54,6 +54,17 @@ class IntoStoreController extends Controller
          ->get();
          return json_encode($into_stores);
     }
+    public function showBatch($batch_number){
+        //
+        $data=DB::table('into_store')
+        ->where('into_store.batch_number', '=', $batch_number)
+        ->join('materials', 'materials.id', '=', 'into_store.material_id')
+        ->join('material_categories','material_categories.id','=','materials.material_category_id')
+        ->join('measurements','measurements.id','=','materials.measurement_id')
+        ->select('into_store.*', 'materials.name','material_categories.type', 'materials.unit_cost','materials.material_category_id', 'materials.measurement_id', 'measurements.measurement', 'measurements.symbol', 'material_categories.category_name')
+        ->get();
+        return json_encode($data);
+   }
     /**
      * Show the form for creating a new resource.
      *

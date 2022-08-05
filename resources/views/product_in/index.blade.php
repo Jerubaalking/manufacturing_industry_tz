@@ -5,11 +5,15 @@
     <!-- DataTables -->
     <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.1.0/css/buttons.dataTables.min.css">
-
+    <style type="text/css" media="print">
+        .nonPrintable{
+            display:none;
+        }
+    </style>
 @endsection
 
 @section('content')
-    <div class="box">
+    <div class="box nonPrintable" id="noPrintable">
 
                         <h3 class="title-5 m-b-35">ProductIn Details</h3>
                                 <div class="table-data__tool">
@@ -108,6 +112,7 @@
   </div>
 
     @include('product_in.form')
+    @include('product_in.batch')
 
 @endsection
 
@@ -479,6 +484,53 @@ $('#materials').delegate('.remove', 'click', function(){
             });
         }
 
+        function materialData(batch_number){
+            if(batch_number == ''||null){
+
+            }else{
+                
+            $.ajax({
+                    url:'/intoStoreShow/'+batch_number,
+                    success: function(html){
+                        let datas = JSON.parse(html)
+                        $('#materialData-body').html('');
+                        let table = '';
+                        let sum = 0;
+                        let weight = 0;
+                        let litres = 0;
+                        let date = '';
+                        for(let data of datas){
+                            sum+=data.cost;
+                            date = data.updated_at;
+                            
+                            table+=`<tr>
+                            <td>${data.name}</td>
+                            <td>${data.category_name}</td>
+                            <td>${data.qty} ${data.symbol}</td>
+                            <td>${data.cost}</td>
+                            </tr>`
+                            console.log(data)
+                        };
+                        table+=`<tr>
+                            <td>Total</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>${sum}</td>
+                            </tr>`;
+                        $('#batch_number_report').html('');
+                        $('#batch_number_report').append(batch_number);
+                        $('#date_report').html('');
+                        $('#date_report').append(date);
+                        $('#materialData-body').append(table);
+                        $('#modal-materialData').modal('show');
+                    }
+                })
+            }
+        }
+        function printModal(){
+            let modalBody = $('#materialData-modal').detach();
+            window.print();
+        }
         function deleteData(id){
             var csrf_token = $('meta[name="csrf-token"]').attr('content');
             swal({

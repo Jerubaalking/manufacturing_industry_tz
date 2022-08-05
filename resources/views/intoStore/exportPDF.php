@@ -5,7 +5,6 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="asset('css1.css')}}">
     <!-- Font Awesome -->
    
      <!-- Vendor CSS-->
@@ -13,7 +12,7 @@
     <!-- Ionicons -->
     <link rel="stylesheet" href="{{ asset('assets/bower_components/Ionicons/css/ionicons.min.css')}} ">
 
-    <title> Misana Reports|| PDF </title>
+    <title> Misana Reports|PDF </title>
 </head>
 <body>
 <style type="text/css" media="screen">

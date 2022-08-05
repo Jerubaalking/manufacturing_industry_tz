@@ -57,6 +57,7 @@ Route::resource('/intoStore',IntoStoreController::class);
 Route::get('/apiIntoStore',[IntoStoreController::class, 'apiIntoStore']);
 Route::post('/apiUseStore',[IntoStoreController::class, 'apiUseStore']);
 Route::get('/intoStoreShow',[IntoStoreController::class, 'show']);
+Route::get('/intoStoreShow/{batch_number}',[IntoStoreController::class, 'showBatch']);
 Route::get('/intoStoreShowByDates',[IntoStoreController::class, 'showByDates']);
 Route::get('/exportIntoStorePDF',[IntoStoreController::class, 'exportPDF']);
 //Materials Route here 
