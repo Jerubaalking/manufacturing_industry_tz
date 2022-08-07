@@ -60,6 +60,7 @@ Route::get('/intoStoreShow',[IntoStoreController::class, 'show']);
 Route::get('/intoStoreShow/{batch_number}',[IntoStoreController::class, 'showBatch']);
 Route::get('/intoStoreShowByDates',[IntoStoreController::class, 'showByDates']);
 Route::get('/exportIntoStorePDF',[IntoStoreController::class, 'exportPDF']);
+Route::get('/batchReport',[IntoStoreController::class, 'batchReport']);
 //Materials Route here 
 
 Route::resource('/materialCategories',MaterialCategoriesController::class);

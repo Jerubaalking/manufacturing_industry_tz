@@ -41,6 +41,12 @@
                         class="btn btn-default  au-btn--small">
                         <i class="zmdi zmdi-download"></i> <i class="fa fa-pdf"></i> PDF </a>
                 </div>
+                
+                <div class="col-md-2 form group">
+                    <a id="print_btn" target="_blank" onclick="batchReport('batchReport')" style="margin-top:22px;"
+                        class="btn btn-default  au-btn--small">
+                        <i class="zmdi zmdi-download"></i> <i class="fa fa-pdf"></i> Batch Report </a>
+                </div>
                 <div class="col-md-1 form group" style="margin-top:2px;">
                     <label> Value</label> <br>
                     <label id="in_total" class="text-success"></label>
@@ -143,7 +149,7 @@
         })
         $('#date_range').daterangepicker();
         
-        function buildTable(tableName, column, router){
+    function buildTable(tableName, column, router){
             let table = $(tableName).DataTable({
                     processing: true,
                     rowReorder: {
@@ -161,13 +167,13 @@
                     columns:column
                 });
                 return table;
-        }
+    }
 
         function populateTable(route) {
             var dts = $('#date_range').val();
             var status = $('#status').val();
 
-            let start = moment(`${dts.split('-')[0]}`).format('YYYY-MM-DD 23:59:59');
+            let start = moment(`${dts.split('-')[0]}`).format('YYYY-MM-DD 00:00:00');
             //i add 1 day to the end date due to some bug
             let end = moment(`${dts.split('-')[1]}`).add(1, 'days').format('YYYY-MM-DD 23:59:59');
             let st = start;
@@ -208,8 +214,8 @@
 
             let useColumns = [
 
-                { data: 'batch_number', name: 'batch_name' },
-                { data: 'product_name', name: 'product'},
+                { data: 'batch_number', name: 'batch_number' },
+                { data: 'product_name', name: 'product_name'},
                 { data: 'name', name: 'name' },
                 { data: 'category_name', name: 'category_name' },
                 { data: 'type', name: 'type' },
@@ -279,9 +285,9 @@
 
             var dts = $('#date_range').val();
             var status = $('#status').val();
-            let start = moment(`${dts.split('-')[0]}`).utc().format('YYYY-MM-DD 23:59:59');
+            let start = moment(`${dts.split('-')[0]}`).format('YYYY-MM-DD 00:00:00');
             //i add 1 day to the end date due to some bug
-            let end = moment(`${dts.split('-')[1]}`).add(1, 'days').utc().format('YYYY-MM-DD 23:59:59');
+            let end = moment(`${dts.split('-')[1]}`).add(1, 'days').format('YYYY-MM-DD 23:59:59');
             let st = start;
             let ed = end;
             let obj = {};
@@ -321,9 +327,9 @@
 
             var dts = $('#date_range').val();
             var status = $('#status').val();
-            let start = moment(`${dts.split('-')[0]}`).utc().format('YYYY-MM-DD 23:59:59');
+            let start = moment(`${dts.split('-')[0]}`).format('YYYY-MM-DD 00:00:00');
             //i add 1 day to the end date due to some bug
-            let end = moment(`${dts.split('-')[1]}`).add(1, 'days').utc().format('YYYY-MM-DD 23:59:59');
+            let end = moment(`${dts.split('-')[1]}`).add(1, 'days').format('YYYY-MM-DD 23:59:59');
             let st = start;
             let ed = end;
             let obj = {};
@@ -365,6 +371,56 @@
             })
         }
 
+        
+        function batchReport(router) {
+            
+            var dts = $('#date_range').val();
+            var status = $('#status').val();
+            let start = moment(`${dts.split('-')[0]}`).format('YYYY-MM-DD');
+            //i add 1 day to the end date due to some bug
+            let end = moment(`${dts.split('-')[1]}`).add(1, 'days').format('YYYY-MM-DD');
+            let st = start;
+            let ed = end;
+            let obj = {};
+            if (status == 'all') {
+                obj.start = st.toString() + ' 00:00:00';
+                obj.end = ed.toString() + ' 23:59:59';
+                obj.status = null;
+            } else {
+
+                obj.start = st.toString() + ' 00:00:00';
+                obj.end = ed.toString() + ' 23:59:59';
+                obj.status = status;
+            }
+            if(status != 'in'){
+                $.ajax({
+                    // type: router.type,
+                    // dataType: router.dataType,
+                    data: obj,
+                    url: router,
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function (html) {
+                        var blob = new Blob([html], { type: 'application/pdf' });
+                        // var link = document.createElement('a');
+                        // link.href = window.URL.createObjectURL(blob);
+                        // link.download = moment().utc()+"-MaterialReport.pdf";
+                        // link.click();
+                        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                            window.navigator.msSaveOrOpenBlob(blob); // for IE
+                        }
+                        else {
+                            var fileURL = URL.createObjectURL(blob);
+                            var newWin = window.open(fileURL);
+                            newWin.focus();
+                            newWin.location.reload();
+                        }
+                        // console.log(html)
+                    }
+                })
+            }
+        }
         let table = populateTable('apiIntoStore');
 
         $(function () {

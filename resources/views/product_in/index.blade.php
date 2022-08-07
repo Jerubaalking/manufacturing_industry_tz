@@ -2,9 +2,19 @@
 
 
 @section('top')
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.1.0/css/buttons.dataTables.min.css">
+<!-- DataTables -->
+<link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+
+<!-- daterange picker -->
+<link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-daterangepicker/daterangepicker.css') }}">
+<!-- bootstrap datepicker -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.1.0/css/buttons.dataTables.min.css">
+<link rel="stylesheet"
+    href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net/css/dataTables.dateTime.min.css') }} ">
+<link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net/css/editor.dataTables.min.css') }} ">
+<link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net/css/font-awesome.min.css') }} ">
+<link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net/css/select.dataTables.min.css') }} ">
     <style type="text/css" media="print">
         .nonPrintable{
             display:none;
@@ -119,8 +129,13 @@
 @section('bot')
 
 
+<!-- DataTables -->
 <script src=" {{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }} "></script>
-    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }} "></script>
+<script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }} "></script>
+<script src=" {{ asset('assets/bower_components/datatables.net/js/dataTables.rowReorder.min.js') }} "></script>
+<script src="{{ asset('assets/bower_components/datatables.net/js/dataTables.responsive.min.js') }} "></script>
+<script src="{{ asset('assets/bower_components/datatables.net/js/dataTables.select.min.js') }} "></script>
+<script src="{{ asset('assets/bower_components/datatables.net/js/dataTables.dateTime.min.js') }} "></script>
 
 
     <!-- InputMask -->
@@ -190,9 +205,11 @@
     <script type="text/javascript">
         var table = $('#products-in-table').DataTable({
             processing: true,
-            serverSide: true,
+            rowReorder: {
+                        selector: 'td:nth-child(3)'
+                    },
+                    "autoWidth": false,
             dom:'lBfrtip',
-           "ScrollX": "100%",
            "scrollCollapse": true,
             buttons: [
             'excel', 'pdf', 'print'
@@ -500,7 +517,7 @@ $('#materials').delegate('.remove', 'click', function(){
                         let litres = 0;
                         let date = '';
                         for(let data of datas){
-                            sum+=data.cost;
+                            sum+=parseInt(data.cost);
                             date = data.updated_at;
                             
                             table+=`<tr>
