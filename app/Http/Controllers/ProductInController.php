@@ -173,43 +173,25 @@ class ProductInController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'product_id'     => 'required',
-            'qty'            => 'required',
-            'price'          => 'required',
-            'tprice'         => 'required',
-            'tlitre'         => 'required',
-            'date_in'        => 'required'
-        ]);
-        $form_datas = array(
-            'product_id' => $request->product_id,
-            'qty' => $request->qty,
-            'price' => $request->price,
-            'tprice' => $request->tprice,
-            'tlitre' => '1',
-            'date_in' => $request->date_in,
-    
-        );
-        $product_inV=DB::table('product_in')->select('qty','price','tprice','tlitre')->where('id','=',$id)->get();
-        $product=DB::table('products')->select('qty','tlitre')->where('id','=',$request->product_id)
-        ->get();
-        $x=$product[0]->qty-$product_inV[0]->qty;
-        $tlitre=$product[0]->tlitre-$product_inV[0]->tlitre;
-        $y= $request->qty+=$x;
-        $mylitre=90;
-        $tlitre_update=$mylitre+=$tlitre;
-            $product_in=DB::table('product_in')
-            ->where('id','=',$id)
-            ->update($form_datas);
-      
-            //$x=$product_in->qty-$product->qty; 
-             $myform_data = array(
-                 'qty'=>$y,
-                 'tlitre'=>$tlitre_update,
-             );
-       
+            $batch_number = $request->batch_number;
+            $date_in = $request->manufacture_date;
+            $product_id = $request->product_id;
+            $qty = $request->qty;
+            
+            // foreach ($qty as $i=>$val){
+                $form_datas = array(
+                    'batch_number' => $batch_number,
+                    'product_id' => $product_id,
+                    'qty' => $qty,
+                    'date_in' => $date_in,
+                    'created_at' =>Carbon::now(),
+                    'updated_at' =>Carbon::now(),
+            
+                );
+            // }
+
              DB::table('products')
-             ->where('id','=',$request->product_id)->update($myform_data);
+             ->where('id','=',$request->product_id)->update($form_datas);
              
              return response()->json([
                  'success'    => true,
@@ -261,7 +243,7 @@ class ProductInController extends Controller
     public function apiProducts_in(){
         $products=DB::table('products')->join('product_in','product_in.product_id','=','products.id')
         ->select('product_in.*','products.product_name')
-        ->orderBy('product_in.id','DESC')
+        ->orderBy('product_in.date_in','DESC')
         ->get();
         if(Auth::user()->role=="Superadministrator"){
         return Datatables::of($products)
@@ -274,7 +256,7 @@ class ProductInController extends Controller
                     '<a onclick="materialData(`'.$products->batch_number.'`)" class="btn btn-success btn-xs"><i class="glyphicon glyphicon-edit"></i> materials</a>
                     <a onclick="deleteData('.$products->id.')" class="btn btn-danger btn-xs"><i class="glyphicon glyphicon-trash"></i> Delete</a> ';
             })
-            ->rawColumns(['products_name','supplier_name','action'])->make(true);
+            ->rawColumns(['products_name','product_in.date_in','action'])->make(true);
 
     }
     else{

@@ -141,11 +141,11 @@
     
        
     <div id="watermark">
-                     <img src="assets/img/misana.png" alt="logo" height="100" width="150" style="float:right;padding-right:62px;margin-top:-25px;">
-                     <img src="assets/img/misana.png" height="100%" width="100%" style="opacity: 0.05;"/>
+                     <img src="assets/img/misana.png" alt="logo" height="40" width="80" style="float:right;padding-right:62px;margin-top:5px;">
+                     <!-- <img src="assets/img/misana.png" height="70%" width="80%" style="opacity: 0.05;"/> -->
                         </div>
-      <section>
-      <div class="box" style="margin-top:80px;">
+      <section class="wrapper container">
+      <div class="box" style="margin-top:0px;">
     
       <center><h1 style="color:red;"><strong>MISANA HOME BAKERY</strong></h1></center>
       <h5 style="margin-left:30px;margin-top:10px;"><strong style="color:green">Material Report <br> Status-<span id="batch_number_report"> <?php echo $status; ?></span>

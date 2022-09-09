@@ -10,7 +10,9 @@
                     <h3 class="modal-title"></h3>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" id="tasks_id" name="task_id">
+                    <input type="hidden" id="task_id" name="task_id">
+                    <input type="hidden" id="task_number" name="task_number">
+                    <input type="hidden" id="employee_id" name="employee_id">
                     <div class="box-body">
                     <div class="row">
                     <div class='col-md-6'>

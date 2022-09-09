@@ -302,6 +302,12 @@ class IntoStoreController extends Controller
             ]);
         }
     }
+    public function categories(Request $request){
+        $categories = DB::table('material_categories')
+        ->select('category_name', 'id')
+        ->get();
+        return json_encode($categories);
+    }
     public function batchReport(Request $request){
         $end=$request->input('end');
         $start=$request->input('start');
@@ -312,12 +318,12 @@ class IntoStoreController extends Controller
        
         switch ($status) {            
             case 'process': 
-            $batches = DB::table('into_store')
-            ->whereBetween('created_at', [$start, $end])
-            ->where('into_store.status','=',$status)
-            ->select('batch_number')
-            ->groupBy('batch_number')
-            ->get();
+                $batches = DB::table('into_store')
+                ->whereBetween('created_at', [$start, $end])
+                ->where('into_store.status','=',$status)
+                ->select('batch_number')
+                ->groupBy('batch_number')
+                ->get();
                 $into_store=DB::table('into_store')
                 ->whereBetween('into_store.created_at', [$start, $end])
                 ->where('into_store.status','=',$status)
@@ -367,7 +373,7 @@ class IntoStoreController extends Controller
                 break;
         }
         // info($into_store);
-        $pdf = PDF::loadview('intoStore.batchReport', compact('categories','into_store', 'batches','start','end', 'status'));
+        $pdf = PDF::loadview('intoStore.batchReport', compact('categories','into_store', 'batches','start','end', 'status'))->setPaper('a4', 'landscape');
         return $pdf->stream();
     }
     public function showByDates(Request $request){
@@ -442,7 +448,7 @@ class IntoStoreController extends Controller
         switch ($status) {
             case 'in':
                 $into_store=DB::table('into_store')
-                ->whereBetween('into_store.created_at', [$start, $end])
+                ->whereBetween('into_store.date', [$start, $end])
                 ->where('into_store.status','=',$status)
                 ->join('materials', 'materials.id', '=', 'into_store.material_id')
                 ->select('into_store.*', 'materials.name', 'materials.unit_cost', 'materials.material_category_id','materials.measurement_id','measurements.measurement', 'measurements.symbol','material_categories.category_name','material_categories.type')
@@ -454,9 +460,9 @@ class IntoStoreController extends Controller
                 ->get();
                 break;
             
-            case 'process':
+            case 'process':                
                 $into_store=DB::table('into_store')
-                ->whereBetween('into_store.created_at', [$start, $end])
+                ->whereBetween('into_store.date', [$start, $end])
                 ->where('into_store.status','=',$status)
                 ->join('materials', 'materials.id', '=', 'into_store.material_id')
                 ->join('products', 'products.id','=','into_store.product_id')
@@ -470,7 +476,7 @@ class IntoStoreController extends Controller
                 
             case 'finished':
                 $into_store=DB::table('into_store')
-                ->whereBetween('into_store.created_at', [$start, $end])
+                ->whereBetween('into_store.date', [$start, $end])
                 ->where('into_store.status','=',$status)
                 ->join('materials', 'materials.id', '=', 'into_store.material_id')
                 ->join('products', 'products.id','=','into_store.product_id')

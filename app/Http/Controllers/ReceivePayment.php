@@ -49,9 +49,48 @@ class ReceivePayment extends Controller
         
         $date=Carbon::now()->format('Y-m-d');
         $task_id=$request->task_id;
+        $employee_id=$request->employee_id;
+        $amount_paid=$request->amount;
+        $payment_form=array(
+            'employee_id'=>$request->employee_id,
+            'amount'=>$request->amount,
+            'payment_methode'=>$request->payment_methode,
+            'created_at'=>$request->payment_date,
+        
+       );
+       info($task_id);
+    //    return $request->account_id;
+     
+    //      DB::table('receive_sales')->insert($payment_form);
+        
+    //      DB::table('task')
+    //      ->update([
+    //      'amount_paid' => DB::raw('amount_paid + '.$amount_paid),
+    //      'amount_due' => DB::raw('amount_due -'. $amount_paid)
+    //       ])
+    //      ->where('id', $task_id);
+
+         return response()->json([
+            'success'    => true,
+            'message'    => 'Information successfuly added'
+        ]);
+    }
+    public function save_public(Request $request)
+    {
+        //
+        $this->validate($request ,[
+            'amount'=> 'required|string',
+            'payment_methode' => 'required',
+       
+            
+        ]);
+        
+        $date=Carbon::now()->format('Y-m-d');
+        $task_id=$request->task_id;
         $amount_paid=$request->amount;
         $payment_form=array(
             'task_id'=>$request->task_id,
+            'employee_id'=>$request->employee_id,
             'amount'=>$request->amount,
             'payment_methode'=>$request->payment_methode,
             'created_at'=>$request->payment_date,
@@ -64,9 +103,8 @@ class ReceivePayment extends Controller
          DB::table('task')
          ->where('id', $task_id)
          ->update([
-         'amount_paid' => DB::raw('amount_paid + '.$amount_paid),
-         'amount_due' => DB::raw('amount_due -'. $amount_paid)
-         
+            'amount_paid' => DB::raw('amount_paid + '.$amount_paid),
+            'amount_due' => DB::raw('amount_due -'. $amount_paid)
           ]);
 
          return response()->json([

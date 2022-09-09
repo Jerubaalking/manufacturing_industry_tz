@@ -61,6 +61,7 @@ Route::get('/intoStoreShow/{batch_number}',[IntoStoreController::class, 'showBat
 Route::get('/intoStoreShowByDates',[IntoStoreController::class, 'showByDates']);
 Route::get('/exportIntoStorePDF',[IntoStoreController::class, 'exportPDF']);
 Route::get('/batchReport',[IntoStoreController::class, 'batchReport']);
+Route::get('/intoStoreCategories',[IntoStoreController::class, 'categories']);
 //Materials Route here 
 
 Route::resource('/materialCategories',MaterialCategoriesController::class);
@@ -155,8 +156,12 @@ Route::get('/check/{id}', [SupplierController::class,'check']);
 
 
 Route::resource('task',TaskController::class);
-Route::get('/apiTask', [TaskController::class,'apiTask']);
+Route::get('/apiTask/{start}/{end}', [TaskController::class,'apiTask']);
 Route::get('/apiTask1', [TaskController::class,'apiTask1']);
+Route::get('/apiAccountsTask/{start}/{end}', [TaskController::class,'apiAccountsTask']);
+Route::get('/apiClosedTask/{start}/{end}', [TaskController::class,'apiClosedTask']);
+Route::get('/apiDamagedTask/{start}/{end}', [TaskController::class,'apiDamagedTask']);
+Route::get('/taskAccounts/{id}/{start}/{end}', [TaskController::class,'account']);
 Route::post('/exportTask', [TaskController::class,'exportTask']);
 Route::get('/view_details/{id}', [TaskController::class,'edit']);
 Route::get('/task_info/{id}', [TaskController::class,'task_info']);
@@ -175,7 +180,8 @@ Route::resource('remains',StockReturn::class);
 //receive payment
 
 Route::resource('receive_pay',ReceivePayment::class);
-Route::get('/check_amount/{id}', [TaskController::class,'amount_due']);
+Route::post('receive_pay1',[ReceivePayment::class, 'save_public']);
+Route::get('/check_amount/{id}/{start}/{end}', [TaskController::class,'amount_due']);
 
 Route::get('/apiPay', [ReceivePayment::class,'apiTask']);
 
@@ -192,7 +198,8 @@ route::post('/exportexpenses',[ExpensiveController::class,'exportexpenses']);
 route::post('/exportdeposite',[DepositeController::class,'exportdeposite']);
 
 
-Route::resource('/demage_products',ProductDemage::class);
+// Route::resource('/demage_products',ProductDemage::class);
+Route::post('/demage_products/{id}',[ProductDemage::class, 'store1']);
 Route::get('/apiDemage',[ProductDemage::class,'apiDemage']);
 
 Route::post('/exportDemage',[ProductDemage::class,'exportDemage']);

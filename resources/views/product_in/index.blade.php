@@ -214,7 +214,7 @@
             buttons: [
             'excel', 'pdf', 'print'
            ],
-           "lengthMenu": [10,20,30,50,100,500,1000,2000,5000,10000,50000,100000],
+           "lengthMenu": [10,20,30,50,100,500],
             ajax:  "{{ url('apiProducts_in') }}",
             columns: [
              

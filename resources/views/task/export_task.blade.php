@@ -204,9 +204,9 @@
                                  <th scope="col" class="border-0 pl-0">Item Name</th>
                                  <th scope="col" class="border-0 pl-0">Qty</th>  
                                  <th scope="col" class="border-0 pl-0">price</th> 
-                                 <th scope="col" class="border-0 pl-0">Unity Price</th> 
-                                 <th scope="col" class="border-0 pl-0">return Qty</th>  
-                                 <th scope="col" class="border-0 pl-0">return product cost</th> 
+                                 <th scope="col" class="border-0 pl-0">cost</th> 
+                                 <th scope="col" class="border-0 pl-0">damages</th>  
+                                 <th scope="col" class="border-0 pl-0">return cost</th> 
                                  <th scope="col" class="border-0 pl-0">return unity cost</th>   
                                             </tr>
                                         </thead>
@@ -239,10 +239,10 @@
                                          </td>
                                       
                                          <td class="pl-0"style="color:red">
-                                        {{$product_out->return_qty}}
+                                        {{number_format($product_out->demage_cost)}}
                                          </td>
                                          <td class="pl-0" style="color:red">
-                                         {{number_format($product_out->return_price,2)}}
+                                         {{number_format($product_out->returned,2)}}
                                          </td>
                                          <td class="pl-0" style="color:red">
                                          {{number_format($product_out->return_amt,2)}}
@@ -256,9 +256,10 @@
                                       
                                          <td>
                                          </td>
+                                         <td></td>
                                          <td style="color:green">{{$sum_qty}}</td>
                                          <td></td>
-                                         <td style="color:green">{{number_format($sum_amt,2)}}</td>
+                                         <td style="color:green">{{number_format($sum_sub,2)}}</td>
                                          <td style="color:red">{{$sum_return_qty}}</td>
                                          <td></td>
                                          <td style="color:red">{{number_format($sum_return_amt,2)}}</td>
