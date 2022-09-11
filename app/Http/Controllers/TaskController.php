@@ -35,13 +35,14 @@ class TaskController extends Controller
         $account=DB::table('account')
                     ->where('account_group','=','Income')
                      ->get();
+        $employees=DB::table('employee')->select('employee.*')->get();
         $close_task=DB::table('employee')
                      ->join('task','task.empoyee_id','=','employee.id')
                      ->select('task.*','employee.first_name','employee.employee_number')
                      ->where('amount_due','=','0')
                      ->get();
     
-        return view('task.index',compact('empo','product','account','close_task'));
+        return view('task.index',compact('empo','product','employees','account','close_task'));
           
 
     }
@@ -324,42 +325,93 @@ class TaskController extends Controller
 
             }
     }
-    public function apiTask($start, $end)
+    public function apiTask(Request $request, $start, $end, $empId)
     {
         if(request()->ajax()){
         
-        info($start);
+        info($empId);
         info($end);
-        $tasks=DB::table('task')
-        ->whereDate('task.created_at','>=',$start)
-        ->whereDate('task.created_at','<=',$end)
-        ->join('employee', 'employee.id', '=', 'task.empoyee_id')
-        ->join('sales', 'task.id', '=', 'sales.task_id')
-        ->where('task.amount_paid','<', 'task.sub_total')
-        ->where('task.amount_due','>', 0)
-        ->select('task.id','sales.id as sales_id','task.task_number','task.empoyee_id','task.sub_total', 'task.amount_paid', 'task.returned','task.demage_cost', 'task.amount_due','task.created_at','task.updated_at', 'employee.first_name','employee.last_name')
-        ->orderBy('task.created_at', 'DESC')
-        ->get();
+        $tasks = null;
+        $payments = 0;
+        $pded = 0;
+        if($empId == 'all'){
+            $tasks=DB::table('task')
+            ->whereDate('task.created_at','>=',$start)
+            ->whereDate('task.created_at','<=',$end)
+            ->join('employee', 'employee.id', '=', 'task.empoyee_id')
+            ->join('sales', 'task.id', '=', 'sales.task_id')
+            ->where('task.amount_paid','<', 'task.sub_total')
+            ->where('task.amount_due','>', 0)
+            ->select('task.id','sales.id as sales_id','task.task_number','task.empoyee_id','task.sub_total', 'task.amount_paid', 'task.returned','task.demage_cost', 'task.amount_due','task.created_at','task.updated_at', 'employee.first_name','employee.last_name')
+            ->orderBy('task.created_at', 'ASC')
+            ->get();
+        }else{
+            $tasks=DB::table('task')
+            ->whereDate('task.created_at','>=',$start)
+            ->whereDate('task.created_at','<=',$end)
+            ->join('employee', 'employee.id', '=', 'task.empoyee_id')
+            ->join('sales', 'task.id', '=', 'sales.task_id')
+            ->where('employee.id', '=', $empId)
+            ->where('task.amount_paid','<', 'sum(sales.amt)')
+            ->where('task.amount_due','>', 0)
+            ->select('task.id','sales.id as sales_id','task.task_number','task.empoyee_id','task.sub_total', 'task.amount_paid', 'task.returned','task.demage_cost', 'task.amount_due','task.created_at','task.updated_at', 'employee.first_name','employee.last_name')
+            ->orderBy('task.created_at', 'DESC')
+            ->get();
+        }
+       
         $task = array();
         foreach ($tasks as $keys => $tasky) {
             # code...
-            
-            $task1 = array();
+            $payments = DB::table('receive_sales')->where('task_id', $tasky->id)->sum('amount');
+            $payments = $payments - $pded;
             if(sizeof($task)<=0){
+                if($payments > $tasky->sub_total){
+                    $tasky->amount_paid = $tasky->sub_total;
+                    $pded += $tasky->sub_total;
+                }else{
+                    if($payments == 0){
+                        $tasky->amount_paid = 0;
+                        $pded += $payments;
+                    }else{
+                        $tasky->amount_paid = $payments;
+                        $pded += $tasky->sub_total;
+                    }
+                }
                 array_push($task, $tasky);
             }else{
-                
-                if(array_search($tasky->task_number, array_column($task, 'task_number')) !== FALSE){
-                    $key = array_search($tasky->task_number, array_column($task, 'id'));
-                    if(array_search($tasky->task_number, array_column($task, 'task_number')) === FALSE){
+                if($payments > $tasky->sub_total){
+                    $tasky->amount_paid = $tasky->sub_total;
+                    $pded += $tasky->sub_total;
+                }else{
+                    if($payments==0){
+                        $tasky->amount_paid = 0;
+                        $pded += 0;
+                    }else{
+                        if($payments > $tasky->sub_total){
+                            $tasky->amount_paid = $tasky->sub_total;
+                            $pded += $tasky->sub_total;
+                        }else{
+                            if($payments<=0){
+                                $tasky->amount_paid = 0;
+                                $pded += 0;
+                            }else{
+                                $tasky->amount_paid = $payments;
+                                $pded += $payments;
+                            }
+                        }
+                    }
+                }
+                if(array_search($tasky->empoyee_id, array_column($task, 'empoyee_id')) !== FALSE){
+                    $key = array_search($tasky->task_number, array_column($task, 'task_number'));
+                    if(array_search($tasky->created_at, array_column($task, 'created_at')) === FALSE){
                         if( $task[$key]->task_number == $tasky->task_number){
+                        }else{
                             $task[$key]->sub_total +=$tasky->sub_total; 
                             $task[$key]->amount_paid +=$tasky->amount_paid;
                             $task[$key]->returned +=$tasky->returned; 
                             $task[$key]->demage_cost +=$tasky->demage_cost; 
                             $task[$key]->amount_due +=$tasky->amount_due; 
-                        }else{
-                            
+                            $task[$key]->task_number = $tasky->task_number;
                             array_push($task, $tasky);
                         }
                     }else{
@@ -471,23 +523,48 @@ class TaskController extends Controller
         return json_encode($tasks);
         // return view('task.details',compact('tasks'));
     }
-    public function apiAccountsTask(Request $request, $start, $end)
+    public function apiAccountsTask(Request $request, $start, $end, $empId)
     {
-        $tasks=DB::table('task')
-        ->whereDate('task.created_at','>=',$start)
-        ->whereDate('task.created_at','<=',$end)
-        ->join('employee', 'employee.id', '=', 'task.empoyee_id')
-        ->select('task.*', 'employee.first_name', 'employee.last_name')
-        ->get();
-
-        $dates = DB::table('task')
-        ->groupBy('created_at')
-        ->whereNotIn('amount_due',['0'])
-        ->select('created_at')
-        ->get();
-        $task = array();
-        $employees = DB::table('employee')
-        ->get();
+        $tasks=null;
+        $dates=null;
+        $employees = null;
+        if($empId == 'all'){
+            $tasks=DB::table('task')
+            ->whereDate('task.created_at','>=',$start)
+            ->whereDate('task.created_at','<=',$end)
+            ->join('employee', 'employee.id', '=', 'task.empoyee_id')
+            ->select('task.*', 'employee.first_name', 'employee.last_name')
+            ->get();
+    
+            $dates = DB::table('task')
+            ->groupBy('created_at')
+            ->whereNotIn('amount_due',['0'])
+            ->select('created_at')
+            ->get();
+            
+            $employees = DB::table('employee')
+            ->get();
+        }else{
+            $tasks=DB::table('task')
+            ->whereDate('task.created_at','>=',$start)
+            ->whereDate('task.created_at','<=',$end)
+            ->join('employee', 'employee.id', '=', 'task.empoyee_id')
+            ->select('task.*', 'employee.first_name', 'employee.last_name')
+            ->where('employee.id', '=', $empId)
+            ->get();
+    
+            $dates = DB::table('task')
+            ->where('task.empoyee_id', '=', $empId)
+            ->groupBy('created_at')
+            ->whereNotIn('amount_due',['0'])
+            ->select('created_at')
+            ->get();
+            
+            $employees = DB::table('employee')
+            ->where('id', '=', $empId)
+            ->get();
+        }
+        $task = array();;
         // info($employees);
         // info($dates);
         foreach ($employees as $employeekey => $employee) {
@@ -635,16 +712,30 @@ class TaskController extends Controller
             ->rawColumns(['action'])->make(true);
         }
     }
-    public function apiClosedTask($start, $end)
+    public function apiClosedTask($start, $end, $empId)
     {
-        $task=DB::table('task')
-        ->join('employee','task.empoyee_id','=','employee.id')
-        ->whereDate('task.created_at','>=',$start)
-        ->whereDate('task.created_at','<=',$end)
-        ->select('task.*','employee.first_name','employee.employee_number')
-        // ->where('task.amount_paid','=','task.sub_total')
-        ->where('amount_due','=','0')
-        ->get();
+        $task;
+        if($empId == 'all'){
+            $task=DB::table('task')
+            ->join('employee','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=',$start)
+            ->whereDate('task.created_at','<=',$end)
+            ->select('task.*','employee.first_name','employee.employee_number')
+            // ->where('task.amount_paid','=','task.sub_total')
+            ->where('amount_due','=','0')
+            ->get();
+        }else{
+            $task=DB::table('task')
+            ->join('employee','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=',$start)
+            ->whereDate('task.created_at','<=',$end)
+            ->where('employee.id','=',$empId)
+            ->select('task.*','employee.first_name','employee.employee_number')
+            // ->where('task.amount_paid','=','task.sub_total')
+            ->where('amount_due','=','0')
+            ->get();
+        }
+        
 
         return Datatables::of($task)
             ->addColumn('action', function($task){
@@ -655,8 +746,6 @@ class TaskController extends Controller
                    </button>
                    <ul class="dropdown-menu">
                    <li>
-                   <li><a href="#" class="btn btn-warning btn-xs pays" style="color:white" id="'.$task->empoyee_id.'" test="'.$task->id.'"><i class="fa fa-money" style="color:white"></i>Receive Payment</a></li>
-
                        <li><a href="task_info/'.$task->id .'" class="btn btn-success btn-xs more_details" style="color:white" ><i class="glyphicon glyphicon-eye-open" style="color:white"></i>More Details</a></li>
                    </ul>
                </div> ';
@@ -684,16 +773,29 @@ class TaskController extends Controller
             ->escapeColumns([])
             ->rawColumns(['action'])->make(true);
     }
-    public function apiDamagedTask($start, $end)
+    public function apiDamagedTask($start, $end, $empId)
     {
-
-        $task=DB::table('task')
-        ->join('employee','task.empoyee_id','=','employee.id')
-        ->whereDate('task.created_at','>=',$start)
-        ->whereDate('task.created_at','<=',$end)
-        ->select('task.*','employee.first_name','employee.employee_number')
-        ->whereNotIn('demage_cost',['0'])
-        ->get();
+        
+        $task;
+        if($empId == 'all'){
+            $task=DB::table('task')
+            ->join('employee','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=',$start)
+            ->whereDate('task.created_at','<=',$end)
+            ->select('task.*','employee.first_name','employee.employee_number')
+            ->whereNotIn('demage_cost',['0'])
+            ->get();
+        }else{
+            $task=DB::table('task')
+            ->join('employee','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=',$start)
+            ->whereDate('task.created_at','<=',$end)
+            ->where('employee.id','=',$empId)
+            ->select('task.*','employee.first_name','employee.employee_number')
+            ->whereNotIn('demage_cost',['0'])
+            ->get();
+        }
+       
         info($task);
 
         return Datatables::of($task)
@@ -705,7 +807,6 @@ class TaskController extends Controller
                    </button>
                    <ul class="dropdown-menu">
                    <li>
-                   <li><a href="#" class="btn btn-warning btn-xs pays" style="color:white"  id="'.$task->empoyee_id.'" test="'.$task->task_number.'"><i class="fa fa-money" style="color:white"></i>Receive Payment</a></li>
 
                        <li><a href="task_info/'.$task->id .'" class="btn btn-success btn-xs more_details" style="color:white" ><i class="glyphicon glyphicon-eye-open" style="color:white"></i>More Details</a></li>
                    </ul>
@@ -899,16 +1000,25 @@ class TaskController extends Controller
         $empo=DB::table('employee')
         ->join('task','task.empoyee_id','=','employee.id')
         ->where('task.id','=',$id)
+        ->select('employee.id','task.created_at', 'employee.employee_number')
         ->get();
+        $emp_id=$empo[0]->id;
         $emp_number=$empo[0]->employee_number;
+        $created=$empo[0]->created_at;
+
+        $previous_task=DB::table('employee')
+        ->where('employee.id','=',$emp_id)
+        ->join('task','task.empoyee_id','=','employee.id')
+        ->whereDate('task.created_at','<',$created)
+        ->orderBy('task.created_at','DESC')
+        ->get();
 
         $close_task=DB::table('employee')
         ->join('task','task.empoyee_id','=','employee.id')
-        ->where('employee.employee_number','=',$emp_number)
-        ->where('task.amount_due','=','0')
+        ->where('employee.id','=',$emp_id)
         ->get();
         info($pay);
-        return view('task.task_info',compact('data','pay','empo','return_task','close_task','demage_product','id'));
+        return view('task.task_info',compact('data','previous_task','pay','empo','return_task','close_task','demage_product','id'));
         
     }
 
@@ -971,92 +1081,230 @@ class TaskController extends Controller
      */   
     public function exportTask(Request $request)
     {
-        $datesArray = explode('-', $request->date_range);
-        $from = Carbon::create(intVal(explode('/',$datesArray[0])[2]),intVal(explode('/',$datesArray[0])[0]),intVal(explode('/',$datesArray[0])[1]));
-        $to = Carbon::create(intVal(explode('/',$datesArray[1])[2]),intVal(explode('/',$datesArray[1])[0]),intVal(explode('/',$datesArray[1])[1]));
+        $datesArray =explode('-',$request->date_range);
+        $status = $request->status;
+        $empId =$request->employeeId;
+        info($empId);
+        $from = Carbon::create(intVal(explode('/',$datesArray[0])[2]),intVal(explode('/',$datesArray[0])[0]),intVal(explode('/',$datesArray[0])[1]), 0,0,0);
+        $to = Carbon::create(intVal(explode('/',$datesArray[1])[2]),intVal(explode('/',$datesArray[1])[0]),intVal(explode('/',$datesArray[1])[1]),23,59,59);
         info($from);
-        $product_out=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->join('products','sales.product_id','=','products.id')
-        ->whereBetween('task.created_at',array($from,$to))
-        ->select('sales.*','task.demage_cost','task.returned','products.product_name','task.created_at','employee.employee_number','employee.first_name',
-        'employee.phone','employee.last_name',)
-        ->get();
-        info($product_out);
-        $count=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->join('products','sales.product_id','=','products.id')
-        ->whereBetween('task.created_at',array($from,$to))
-        ->select('sales.*','products.product_name','task.created_at','employee.employee_number','employee.first_name',
-        'employee.phone')
-        ->count();
-        $sum_qty=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->whereBetween('task.created_at',array($from,$to))
-       
-        ->sum('sales.qty');
-
-        $sum_amt=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->whereBetween('task.created_at',array($from,$to))
-        ->sum('sales.amt');
-
-        $sum_return_qty=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-
-        ->whereBetween('task.created_at',array($from,$to))
-       
-        ->sum('sales.return_qty');
-
-        $sum_return_amt=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->join('products','sales.product_id','=','products.id')
-        ->whereBetween('task.created_at',array($from,$to))
-        ->select('sales.*','products.product_name','task.created_at','employee.employee_number','employee.first_name',
-        'employee.phone')
-        ->sum('sales.return_amt');
-
-     
-        $sum_return=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->whereBetween('task.created_at',array($from,$to))
-        ->sum('task.returned');
+        if($empId == 'all'){
+            $product_outs=DB::table('sales')
+            ->join('task','sales.task_id','=','task.id')
+            ->join('products','sales.product_id','=','products.id')
+            ->join('employee','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->select('sales.*','task.demage_cost','task.returned','products.product_name','task.created_at','employee.employee_number','employee.first_name',
+            'employee.phone','employee.last_name',)
+            ->get();
+            $product_out = array();
+            foreach ($product_outs as $key => $value) {
+                # code...
+                
+                $demages = DB::table('product_demage')
+                ->where('product_id', '=', $value->product_id)
+                ->where('task_id', '=', $value->task_id)
+                ->select('product_demage.*')
+                ->get();
+                $value->demages =0;
+                foreach($demages as $key1 => $value1){
+                    $value->demage_qty = $value1->qty;
+                    $value->demages += $value1->amt;
+                }
+                array_push($product_out, $value);
+            }
+            info($product_out);
+            
+            $employee=$empId;
+            $count=DB::table('sales')
+            ->join('task','sales.task_id','=','task.id')
+            ->join('products','sales.product_id','=','products.id')
+            ->join('employee','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->select('sales.*','products.product_name','task.created_at','employee.employee_number','employee.first_name',
+            'employee.phone')
+            ->count();
+            $sum_qty=DB::table('sales')
+            ->join('task','sales.task_id','=','task.id')
+            ->join('products','sales.product_id','=','products.id')
+            ->join('employee','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
         
-        $sum_demage=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->whereBetween('task.created_at',array($from,$to))
-        ->sum('task.demage_cost');
+            ->sum('sales.qty');
 
+            $sum_amt=DB::table('sales')
+            ->join('task','sales.task_id','=','task.id')
+            ->join('products','sales.product_id','=','products.id')
+            ->join('employee','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->sum('sales.amt');
 
-        $sum_sub=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->whereBetween('task.created_at',array($from,$to))
-        ->sum('sales.amt');
+            $sum_return_qty=$sum_demage=DB::table('product_demage')
+            ->whereDate('created_at','>=', $from)
+            ->whereDate('created_at','<=', $to)
+            ->sum('qty');
 
-        $sum_recive=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
-        ->whereBetween('task.created_at',array($from,$to))
-        ->sum('task.amount_paid');
+            $sum_return_amt=DB::table('sales')
+            ->whereDate('sales.created_at','>=', $from)
+            ->whereDate('sales.created_at','<=', $to)
+            ->sum('sales.return_amt');
+
         
-        $sum_due= $sum_sub -($sum_recive + $sum_demage + $sum_return);
+            $sum_return=DB::table('sales')
+            ->whereDate('sales.created_at','>=', $from)
+            ->whereDate('sales.created_at','<=', $to)
+            ->sum('sales.return_amt');
+            
+            $sum_demage=DB::table('product_demage')
+            ->whereDate('created_at','>=', $from)
+            ->whereDate('created_at','<=', $to)
+            ->sum('amt');
 
 
+            $sum_sub=DB::table('sales')
+            ->whereDate('sales.created_at','>=', $from)
+            ->whereDate('sales.created_at','<=', $to)
+            ->sum('sales.amt');
 
-        $pdf = PDF::loadView('task.export_task',compact('count','product_out','from','to','sum_qty','sum_amt',
-        'sum_return_qty','sum_return_amt','sum_return','sum_due','sum_recive','sum_sub','sum_due','sum_demage'));
+            $sum_recive=DB::table('receive_sales')
+            ->whereDate('receive_sales.created_at','>=', $from)
+            ->whereDate('receive_sales.created_at','<=', $to)
+            ->sum('receive_sales.amount');
+            
+            $sum_due= $sum_sub -($sum_recive + $sum_demage + $sum_return);
         
-        $pdf->setPaper('A4', 'landscape');
-        return $pdf->stream('supplier.pdf');
+
+            $pdf = PDF::loadView('task.export_task',compact('employee','count','product_out','from','to','sum_qty','sum_amt',
+            'sum_return_qty','sum_return_amt','sum_return','sum_due','sum_recive','sum_sub','sum_due','sum_demage'));
+            
+            $pdf->setPaper('A4', 'landscape');
+            return $pdf->stream('supplier.pdf');
+
+        }else{
+
+            $emply = DB::table('employee')
+            ->where('id', $empId)
+            ->select('first_name','last_name')
+            ->get();
+            $employee = $emply[0]->first_name.' '.$emply[0]->last_name;
+
+            $product_outs=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('sales','task.id','=','sales.task_id')
+            ->join('products','sales.product_id','=','products.id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->select('sales.*','task.demage_cost','task.returned','products.product_name','task.created_at','employee.employee_number','employee.first_name',
+            'employee.phone','employee.last_name')
+            ->get();
+            $product_out = array();
+            foreach ($product_outs as $key => $value) {
+                # code...
+                
+                $demages = DB::table('product_demage')
+                ->where('product_id', '=', $value->product_id)
+                ->where('task_id', '=', $value->task_id)
+                ->select('product_demage.*')
+                ->get();
+                $value->demages =0;
+                foreach($demages as $key1 => $value1){
+                    $value->demage_qty = $value1->qty;
+                    $value->demages += $value1->amt;
+                }
+                array_push($product_out, $value);
+             }
+            info($product_out);
+            $count=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('sales','task.id','=','sales.task_id')
+            ->join('products','sales.product_id','=','products.id')
+            ->select('sales.*')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->count();
+            $sum_qty=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('sales','task.id','=','sales.task_id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->sum('sales.qty');
+
+            $sum_amt=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('sales','task.id','=','sales.task_id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->sum('sales.amt');
+
+            $sum_return_qty=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('sales','task.id','=','sales.task_id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->sum('sales.return_qty');
+
+            $sum_return_amt=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('sales','task.id','=','sales.task_id')
+            ->join('products','sales.product_id','=','products.id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->select('sales.*','products.product_name','task.created_at','employee.employee_number','employee.first_name',
+            'employee.phone')
+            ->sum('sales.return_amt');
+
+        
+            $sum_return=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('sales','task.id','=','sales.task_id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->sum('task.returned');
+            
+            $sum_demage=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('product_demage','task.id','=','product_demage.task_id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->sum('product_demage.amt');
+
+
+            $sum_sub=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->join('sales','task.id','=','sales.task_id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->sum('sales.amt');
+
+            $sum_recive=DB::table('employee')
+            ->where('employee.id','=', $empId)
+            ->join('task','task.empoyee_id','=','employee.id')
+            ->whereDate('task.created_at','>=', $from)
+            ->whereDate('task.created_at','<=', $to)
+            ->sum('task.amount_paid');
+            $sum_due= $sum_sub -($sum_recive + $sum_demage + $sum_return);
+
+
+            info($product_out);
+            $pdf = PDF::loadView('task.export_task',compact('employee','count','product_out','from','to','sum_qty','sum_amt',
+            'sum_return_qty','sum_return_amt','sum_return','sum_due','sum_recive','sum_sub','sum_due','sum_demage'));
+            
+            $pdf->setPaper('A4', 'landscape');
+            return $pdf->stream('supplier.pdf');
+        }
     }
 
 
@@ -1070,21 +1318,83 @@ class TaskController extends Controller
     {
         
     
-        $product_out=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
+        $product_outs=DB::table('sales')
+        ->join('task','task.id','=','sales.task_id')
+        ->join('employee','employee.id','=','task.empoyee_id')
         ->join('products','sales.product_id','=','products.id')
         ->where('task.id','=',$id)
-        ->select('sales.*','products.product_name','task.created_at','employee.employee_number',
+        ->select('sales.price', 'sales.qty','sales.amt','sales.product_id', 'sales.task_id', 'products.product_name','task.created_at','employee.employee_number',
         'employee.first_name','employee.last_name',
         'employee.phone')
+        ->orderBy('sales.created_at', 'ASC')
         ->get();
-        $x=DB::table('employee')
-        ->join('task','task.empoyee_id','=','employee.id')
-        ->join('stock_return','task.id','=','stock_return.task_id')
-        ->join('products','stock_return.product_id','=','products.id')
+        $payments = DB::table('receive_sales')
+            ->where('task_id', '=', $id)
+            ->sum('receive_sales.amount');
+        $product_out = array();
+        $pded = 0;
+        $dates;
+        $start;
+        $end;
+       
+        foreach ($product_outs as $key => $value) {
+            # code...
+            $ppay=$payments-$pded;
+            $demages = DB::table('product_demage')
+            ->where('product_id', '=', $value->product_id)
+            ->where('task_id', '=', $value->task_id)
+            ->select('product_demage.*')
+            ->get();
+            info($demages);
+            $value->demages = 0;
+            $value->amount_paid = 0;
+            if($key == sizeof($product_outs)-1){
+                $end = $value->created_at;
+            }
+            if($key == 0){
+                $start = $value->created_at;
+            }
+            if(sizeof($demages)>0){
+                $value->amt+=$demages[0]->amt;
+                // foreach($demages as $key1 => $value1){
+                    if($ppay > $value->amt){
+                        $value->amount_paid = $value->amt;
+                        $pded += $value->amt;
+                        $value->demage_qty = $demages[0]->qty;
+                        $value->demages += $demages[0]->amt;
+                    }else{
+                        $value->amount_paid = $ppay;
+                        $pded += $value->amt;
+                        $value->demage_qty = $demages[0]->qty;
+                        $value->demages += $demages[0]->amt;
+                    }
+                // }
+            }else{
+                if($ppay > $value->amt){
+                    $value->amount_paid = $value->amt;
+                    $value->demage_qty = 0;
+                    $value->demages += 0;
+                    $pded += $value->amt;
+                }else{
+                    if($ppay <=0){
+                        $value->amount_paid = 0;
+                        $pded += $value->amt;
+                    }else{
+                        $value->amount_paid = $ppay;
+                        $pded += $value->amt;
+                    }
+                }
+            }
+
+            array_push($product_out, $value);
+    }
+        info($product_out);
+    $dates = $start;
+        $x=DB::table('receive_sales')
+        ->join('task','receive_sales.task_id','=','task.id')
+        ->join('employee','task.empoyee_id','=','employee.id')
         ->where('task.id','=',$id)
-        ->select('stock_return.*','products.product_name','task.created_at','employee.employee_number',
+        ->select('receive_sales.*','task.task_number','receive_sales.created_at','employee.employee_number',
         'employee.first_name','employee.last_name',
         'employee.phone')
         ->get();
@@ -1117,9 +1427,8 @@ class TaskController extends Controller
 
         $sum_amt=DB::table('employee')
         ->join('task','task.empoyee_id','=','employee.id')
-        ->join('sales','task.id','=','sales.task_id')
         ->where('task.id','=',$id)
-        ->sum('sales.amt');
+        ->sum('task.sub_total');
 
         $sum_return_qty=DB::table('employee')
         ->join('task','task.empoyee_id','=','employee.id')
@@ -1166,8 +1475,9 @@ class TaskController extends Controller
         ->sum('amount_due');
 
         $sum_sub=DB::table('task')
-        ->where('id','=',$id)
-        ->sum('sub_total');
+        ->where('task.id','=', $id)
+        ->join('sales', 'sales.task_id','=', 'task.id')
+        ->sum('sales.amt');
 
         $sum_recive=DB::table('task')
         ->where('id','=',$id)
@@ -1176,11 +1486,11 @@ class TaskController extends Controller
 
 
 
-        $pdf = PDF::loadView('task.single_report',compact('count','product_out','sum_qty','sum_amt',
+        $pdf = PDF::loadView('task.single_report',compact('dates', 'count','product_out','sum_qty','sum_amt',
         'sum_return_qty','sum_return_amt','sum_return','sum_due','demage',
         'sum_recive','sum_sub','sum_due','x','sum_demage_qty','sum_demage_amt'));
         
-        $pdf->setPaper('A4', 'landscape');
+        // $pdf->setPaper('A4', 'landscape');
         return $pdf->stream('supplier.pdf');
     }
 

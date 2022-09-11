@@ -157,6 +157,10 @@
                                     <div class="table-responsive">
                                         <table class="table table-top-campaign">
                                             <tbody>
+                                            <tr>
+                                                <td>Employee</td>
+                                                <td>{{$employee}}</td>
+                                                </tr>
                                                 <tr>
                                                 <td>Total Task Records</td>
                                                 <td>{{$count}}</td>
@@ -205,9 +209,7 @@
                                  <th scope="col" class="border-0 pl-0">Qty</th>  
                                  <th scope="col" class="border-0 pl-0">price</th> 
                                  <th scope="col" class="border-0 pl-0">cost</th> 
-                                 <th scope="col" class="border-0 pl-0">damages</th>  
-                                 <th scope="col" class="border-0 pl-0">return cost</th> 
-                                 <th scope="col" class="border-0 pl-0">return unity cost</th>   
+                                 <th scope="col" class="border-0 pl-0">damages</th>   
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -239,14 +241,9 @@
                                          </td>
                                       
                                          <td class="pl-0"style="color:red">
-                                        {{number_format($product_out->demage_cost)}}
+                                        {{number_format($product_out->demages,2)}}
                                          </td>
-                                         <td class="pl-0" style="color:red">
-                                         {{number_format($product_out->returned,2)}}
-                                         </td>
-                                         <td class="pl-0" style="color:red">
-                                         {{number_format($product_out->return_amt,2)}}
-                                         </td>
+                                         
                                          </tr>
                                          @endforeach
                                          <tr>
@@ -260,10 +257,8 @@
                                          <td style="color:green">{{$sum_qty}}</td>
                                          <td></td>
                                          <td style="color:green">{{number_format($sum_sub,2)}}</td>
-                                         <td style="color:red">{{$sum_return_qty}}</td>
-                                         <td></td>
-                                         <td style="color:red">{{number_format($sum_return_amt,2)}}</td>
-                                         </tr>
+                                         <td style="color:red">{{number_format($sum_demage, 2)}}</td>
+                                         
                                         </tbody>
                                    
                                     </table>

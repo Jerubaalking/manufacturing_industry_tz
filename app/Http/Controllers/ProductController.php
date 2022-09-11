@@ -181,9 +181,22 @@ class ProductController extends Controller
 
 
     public function apiProducts(){
-        $product=DB::table('categories')
+        $products=DB::table('categories')
         ->join('products','products.category_id','=','categories.id')
         ->get();
+        $product = array();
+        foreach ($products as $data) {
+            $product_in=DB::table('product_in')
+            ->where('product_id','=', $data->id)
+            ->sum('qty');
+            $product_sales =DB::table('sales')
+            ->where('product_id','=', $data->id)
+            ->sum('qty');
+            $available = $product_in - $product_sales;
+            $data->available = $available;
+            
+            array_push($product, $data);
+        }
         if(Auth::user()->role=="Superadministrator"){
         return Datatables::of($product)
             ->addColumn('action', function($product){
@@ -211,10 +224,27 @@ class ProductController extends Controller
         
         $from=$request->from;
         $to=$request->to;
-        $product=DB::table('products')
+        info($from);
+        $products=DB::table('products')
         ->get();
-        $sum_stock=DB::table('products')
-        ->sum('stock');
+        $product = array();
+        foreach ($products as $data) {
+            $product_in=DB::table('product_in')
+            ->where('product_id','=', $data->id)
+            ->sum('qty');
+            $product_sales =DB::table('sales')
+            ->where('product_id','=', $data->id)
+            ->sum('qty');
+            $available = $product_in - $product_sales;
+            $data->available = $available;
+            
+            array_push($product, $data);
+        }
+        $sum_stock1=DB::table('product_in')
+        ->sum('qty');
+        $sum_used = DB::table('sales')
+        ->sum('qty');
+        $sum_stock=$sum_stock1-$sum_used;
         $pdf = PDF::loadView('products.stoctexport',compact('product','from','to','sum_stock'));
         return $pdf->stream('stock.pdf');
     }

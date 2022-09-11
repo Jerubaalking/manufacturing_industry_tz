@@ -158,41 +158,41 @@
                                         <table class="table table-top-campaign">
                                             <tbody>
                                             <tr>   
+                                                  <tr>   
+                                                  <td>Date:</td>
+                                                  <td style=" text-align:right;">{{$dates}}</td>
+                                                  </tr>
                                                   <td>Sales Qty</td>
-                                                  <td>{{$sum_qty}}</td>
+                                                  <td style=" text-align:right;">{{$sum_qty}}</td>
                                                 
                                                   </tr>
                                                   <tr>   
-                                                  <td>Return Qty</td>
-                                                  <td>{{$sum_return_qty}}</td>
-                                                  </tr>
-                                                  <tr>   
                                                   <td>Demage Product Qty</td>
-                                                  <td>{{$sum_demage_qty}}</td>
+                                                  <td style=" text-align:right;">{{$sum_demage_qty}}</td>
                                                   </tr>
 
                                                 <tr>   
                                                   <td>Amount Required</td>
-                                                  <td>{{number_format($sum_sub,2)}}</td>
+                                                  <td style=" text-align:right;">{{number_format($sum_amt,2)}}</td>
                                                 
                                                   </tr>
                                                 <tr>
                                                   
                                                     <td>Amount Received</td>
-                                                    <td>{{number_format($sum_recive,2)}}</td>
+                                                    <td style="text-align:right;">{{number_format($sum_recive,2)}}</td>
                                                   
                                                 </tr>
                                                 <tr>
                                                     <td style="color:red">Cost Returned</td>
-                                                    <td  style="color:red">{{number_format($sum_return_amt,2)}}</td>
+                                                    <td  style="color:red; text-align:right;">{{number_format($sum_return_amt,2)}}</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="color:red">Demage Product Cost</td>
-                                                    <td  style="color:red">{{number_format($sum_demage_amt,2)}}</td>
+                                                    <td  style="color:red; text-align:right;">{{number_format($sum_demage_amt,2)}}</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="color:red">Amount Due</td>
-                                                    <td  style="color:red">{{number_format($sum_due,2)}}</td>
+                                                    <td  style="color:red; text-align:right;">{{number_format($sum_due,2)}}</td>
                                                 </tr>  
                                                        
                                             </tbody>
@@ -206,38 +206,42 @@
         <div class="table-responsive">
                                     <table class="table">
                                         <thead>
-                                            <tr>          
+                                            <tr style="text-align:right;">          
                                    <th scope="col" class="border-0 pl-0">Date</th>
-                                    <th scope="col" class="border-0 pl-0">Supplier Number</th>
+                                    <th scope="col" class="border-0 pl-0">Account Number</th>
                                    <th scope="col" class="border-0 pl-0">Item Name</th>
                                    <th scope="col" class="border-0 pl-0">Qty</th>  
                                    <th scope="col" class="border-0 pl-0">price</th> 
-                                   <th scope="col" class="border-0 pl-0">Unity Price</th> 
+                                   <th scope="col" class="border-0 pl-0">Total Price</th>
+                                   <th scope="col" class="border-0 pl-0">Payments</th> 
                            
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody style="text-align:right;">
                                         @foreach($product_out as  $product_out)
                                         <tr>
                                         <td class="pl-0">
                                        {{$product_out->created_at}}
                                        </td>
-                                      <td class="pl-0">
-                                       {{$product_out->employee_number}}
-                                       </td>
+                                        <td class="pl-0">
+                                        {{$product_out->employee_number}}
+                                        </td>
                                   
                                    
                                       <td class="pl-0">
                                        {{$product_out->product_name}}
                                        </td>
-                                       <td class="pl-0">
+                                       <td class="pl-0" style="text-align:right;">
                                        {{$product_out->qty}}
                                          </td>
-                                         <td class="pl-0">
+                                         <td class="pl-0" style="text-align:right;">
                                          {{number_format($product_out->price,2)}}
                                          </td>
-                                         <td class="pl-0">
+                                         <td class="pl-0" style="text-align:right;">
                                          {{number_format($product_out->amt,2)}}
+                                         </td>
+                                         <td class="pl-0" style="text-align:right;">
+                                         {{number_format($product_out->amount_paid,2)}}
                                          </td>
                                          </tr>
                                          @endforeach
@@ -250,7 +254,8 @@
                                          </td>
                                          <td style="color:green">{{$sum_qty}}</td>
                                          <td></td>
-                                         <td style="color:green">{{number_format($sum_amt,2)}}</td>
+                                         <td style="color:green; text-align:right;">{{number_format($sum_amt,2)}}</td>
+                                         <td style="color:green; text-align:right;">{{number_format($sum_recive,2)}}</td>
                                          </tr>
                                         </tbody>
                                    
@@ -259,19 +264,76 @@
         </div>
         </div>
 
- 
+        
         <div class="row" style="margin-top:50px;">
-        <h3 class="title-5 m-b-35" style="color:red">Returned Information</h3>
+        <h3 class="title-5 m-b-35" style="color:red">Demage Products Information</h3>
         <div class="table-responsive">
                                     <table class="table">
                                         <thead>
                                             <tr>          
                                  <th scope="col" class="border-0 pl-0">Date</th>
-                                 <th scope="col" class="border-0 pl-0">Supplier Number</th>
+                                 <th scope="col" class="border-0 pl-0">Account Number</th>
                                  <th scope="col" class="border-0 pl-0">Item Name</th>
                                  <th scope="col" class="border-0 pl-0">Qty</th>  
                                  <th scope="col" class="border-0 pl-0">price</th> 
                                  <th scope="col" class="border-0 pl-0">Unity Price</th> 
+                            
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach($demage as  $xdemage)
+                                        <tr>
+                                        <td class="pl-0">
+                                       {{$xdemage->created_at}}
+                                       </td>
+                                      <td class="pl-0">
+                                       {{$xdemage->employee_number}}
+                                       </td>
+                                  
+                                   
+                                      <td class="pl-0">
+                                       {{$xdemage->product_name}}
+                                       </td>
+                                       <td class="pl-0">
+                                       {{$xdemage->qty}}
+                                         </td>
+                                         <td class="pl-0" style="text-align:right;">
+                                         {{number_format($xdemage->price,2)}}
+                                         </td>
+                                         <td class="pl-0" style="text-align:right;">
+                                         {{number_format($xdemage->amt,2)}}
+                                         </td>
+                                         </tr>
+                                         @endforeach
+                                         <tr>
+                                        <td>Total:</td>
+                                         <td>
+                                         </td>
+                                      
+                                         <td>
+                                         </td>
+                                         <td style="color:green; text-align:right;">{{$sum_demage_qty}}</td>
+                                         <td></td>
+                                         <td style="color:green; text-align:right;">{{number_format($sum_demage_amt,2)}}</td>
+                                      
+                                         </tr>
+                                        </tbody>
+                                   
+                                    </table>
+                                </div>
+        </div>
+        </div>
+ 
+        <div class="row" style="margin-top:50px;">
+        <h3 class="title-5 m-b-35" style="color:red">Payment Information</h3>
+        <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>          
+                                 <th scope="col" class="border-0 pl-0">Date</th>
+                                 <th scope="col" class="border-0 pl-0">Account Number</th>
+                                 <th scope="col" class="border-0 pl-0">Task Number</th>
+                                 <th scope="col" class="border-0 pl-0">Amount Paid</th>  
                                
                                             </tr>
                                         </thead>
@@ -287,16 +349,10 @@
                                   
                                    
                                       <td class="pl-0">
-                                       {{$x->product_name}}
+                                       {{$x->task_number}}
                                        </td>
-                                       <td class="pl-0">
-                                       {{$x->qty}}
-                                         </td>
-                                         <td class="pl-0">
-                                         {{number_format($x->price,2)}}
-                                         </td>
-                                         <td class="pl-0">
-                                         {{number_format($x->amt,2)}}
+                                       <td class="pl-0" style="text-align:right;">
+                                       {{number_format($x->amount,2)}}
                                          </td>
                                          </tr>
                                          @endforeach
@@ -304,12 +360,8 @@
                                         <td>Total:</td>
                                          <td>
                                          </td>
-                                      
-                                         <td>
-                                         </td>
-                                         <td style="color:green">{{$sum_return_qty}}</td>
                                          <td></td>
-                                         <td style="color:green">{{number_format($sum_return_amt,2)}}</td>
+                                         <td style="font-weight:bold;color:green; text-align:right;">{{number_format($sum_recive,2)}}</td>
                                    
                                          </tr>
                                         </tbody>
@@ -319,64 +371,6 @@
         </div>
         </div>
 
-        <div class="row" style="margin-top:50px;">
-        <h3 class="title-5 m-b-35" style="color:red">Demage Products Information</h3>
-        <div class="table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>          
-                                 <th scope="col" class="border-0 pl-0">Date</th>
-                                 <th scope="col" class="border-0 pl-0">Supplier Number</th>
-                                 <th scope="col" class="border-0 pl-0">Item Name</th>
-                                 <th scope="col" class="border-0 pl-0">Qty</th>  
-                                 <th scope="col" class="border-0 pl-0">price</th> 
-                                 <th scope="col" class="border-0 pl-0">Unity Price</th> 
-                            
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        @foreach($demage as  $x)
-                                        <tr>
-                                        <td class="pl-0">
-                                       {{$x->created_at}}
-                                       </td>
-                                      <td class="pl-0">
-                                       {{$x->employee_number}}
-                                       </td>
-                                  
-                                   
-                                      <td class="pl-0">
-                                       {{$x->product_name}}
-                                       </td>
-                                       <td class="pl-0">
-                                       {{$x->qty}}
-                                         </td>
-                                         <td class="pl-0">
-                                         {{number_format($x->price,2)}}
-                                         </td>
-                                         <td class="pl-0">
-                                         {{number_format($x->amt,2)}}
-                                         </td>
-                                         </tr>
-                                         @endforeach
-                                         <tr>
-                                        <td>Total:</td>
-                                         <td>
-                                         </td>
-                                      
-                                         <td>
-                                         </td>
-                                         <td style="color:green">{{$sum_demage_qty}}</td>
-                                         <td></td>
-                                         <td style="color:green">{{number_format($sum_demage_amt,2)}}</td>
-                                      
-                                         </tr>
-                                        </tbody>
-                                   
-                                    </table>
-                                </div>
-        </div>
-        </div>
 
                     {{--<!-- jQuery 3 -->--}}
     {{--<script src="{{  asset('assets/bower_components/jquery/dist/jquery.min.js') }} "></script>--}}

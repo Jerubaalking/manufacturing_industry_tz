@@ -84,7 +84,6 @@
                                         <th>Price</th>
                                         <th>Unity Price</th>
                                         <th>Date</th>
-                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -188,7 +187,7 @@
 
                                     </tr>
                                 </thead>
-                                @foreach($close_task as $i)
+                                @foreach($previous_task as $i)
                                 <tbody>
                                     <td>{{ $i->first_name}}</td>
                                     <td>{{ $i->employee_number}}</td>
@@ -256,7 +255,7 @@
                             buttons: [
                                 'excel', 'pdf', 'print'
                             ],
-                            "lengthMenu": [50, 100, 500, 1000, 2000, 5000, 10000, 50000, 100000],
+                            "lengthMenu": [10, 25, 50, 100, 200, 500, 1000, 2000, 50000, 100000],
                             ajax: "{{ url('/infoApi'). '/' }} " + id,
 
                             columns: [
@@ -266,7 +265,6 @@
                                 { data: 'price', name: 'price' },
                                 { data: 'amt', name: 'amt' },
                                 { data: 'created_at', name: 'created_at' },
-                                { data: 'action', name: 'action', orderable: false, searchable: false }
 
                             ]
                         });

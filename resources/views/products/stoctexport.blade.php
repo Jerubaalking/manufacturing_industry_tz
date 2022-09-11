@@ -147,6 +147,7 @@
                     <div class="row" style="margin-top:80px;">
                     <center><h1 style="color:red;"><strong>Misana Home Bakery</strong></h1></center>
                     <center><h3 style="margin-left:30px;margin-top:-10px;"><strong style="color:green">Stock  Report</strong></h3></center>
+                    <center><h3 style="margin-left:30px;margin-top:-10px; font-size:10px;"><strong style=""><?php echo $kevi=date('Y-m-d H:m:s');?></strong></h3></center>
                   
                     <div class="box">
       
@@ -168,7 +169,7 @@
                                        {{$product->product_name}}
                                        </td>
                                        <td class="pl-0">
-                                       {{$product->stock}}
+                                       {{$product->available}}
                                          </td>
                                          </tr>
                                          @endforeach

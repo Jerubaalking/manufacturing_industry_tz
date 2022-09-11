@@ -33,7 +33,16 @@
                         <input type="date" class="form-control input-sm" id="to" name="to" required>
                     </div> -->
                     <div class="col-md-2 form group" style="margin-left:0px;">
-                        <label>View table</label> <br>
+                        <label>Account</label> <br>
+                        <select class="form-control" onchange="populateTable('apiTask')" name="employeeId" id="employeeId">
+                            <option value="all" selected>All</option>
+                            @foreach($employees as $employee)
+                            <option value="{{$employee->id}}">{{$employee->first_name}} {{$employee->last_name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 form group" style="margin-left:0px;">
+                        <label>Dispatch</label> <br>
                         <select class="form-control" onchange="populateTable('apiTask')" name="status" id="status">
                             <!--<option value="all">all</option>-->
                             <option value="task" selected>Active Tasks</option>
@@ -45,6 +54,7 @@
                             @endif
                         </select>
                 </div>
+
                 
                     <div class="col-md-3 form group">
                         <label>Date Range</label> <br>
@@ -188,6 +198,7 @@
             function populateTable(route) {
                 var dts = $('#date_range').val();
                 var status = $('#status').val();
+                var emp_id = $('#employeeId').val();
 
                 let start = moment(`${dts.split('-')[0]}`).format('YYYY-MM-DD 00:00:00');
                 //i add 1 day to the end date due to some bug
@@ -202,6 +213,7 @@
                 let obj = {};
                     obj.start = st.toString();
                     obj.end = ed.toString();
+                    obj.empId =emp_id;
                     obj.status = status;
                 console.log('date-range: ', obj);
 
@@ -295,7 +307,7 @@
                             <tbody></tbody>`;
                             $('#task-table').append(html);
                             // setTotals(router);
-                            return buildTable('#task-table', accountsColumns, 'apiAccountsTask/'+obj.start+'/'+obj.end)
+                            return buildTable('#task-table', accountsColumns, 'apiAccountsTask/'+obj.start+'/'+obj.end+'/'+obj.empId)
                         case "task":
                             $('#task-table').html('');
                             var html = '';
@@ -316,7 +328,7 @@
                             <tbody></tbody>`;
                             $('#task-table').append(html);
                             // setTotals(router);
-                            return buildTable('#task-table', taskColumns, 'apiTask/'+obj.start+'/'+obj.end)
+                            return buildTable('#task-table', taskColumns, 'apiTask/'+obj.start+'/'+obj.end+'/'+obj.empId)
                         case "closed":
                             $('#task-table').html('');
                             var html = '';
@@ -337,7 +349,7 @@
                             <tbody></tbody>`;
                             $('#task-table').append(html);
                             // setTotals(router);
-                            return buildTable('#task-table', closedColumns, 'apiClosedTask/'+obj.start+'/'+obj.end)
+                            return buildTable('#task-table', closedColumns, 'apiClosedTask/'+obj.start+'/'+obj.end+'/'+obj.empId)
                         case "damaged":
                             $('#task-table').html('');
                             var html = '';
@@ -358,7 +370,7 @@
                             <tbody></tbody>`;
                             $('#task-table').append(html);
                             // setTotals(router);
-                            return buildTable('#task-table', damagedColumns, 'apiDamagedTask/'+obj.start+'/'+obj.end)
+                            return buildTable('#task-table', damagedColumns, 'apiDamagedTask/'+obj.start+'/'+obj.end+'/'+obj.empId)
                         default:
                         $('#task-table').html('');
                             var html = '';
@@ -379,7 +391,7 @@
                             <tbody></tbody>`;
                             $('#task-table').append(html);
                     }
-                    return buildTable('#task-table', taskColumns, 'apiTask/'+obj.start+'/'+obj.end)
+                    return buildTable('#task-table', taskColumns, 'apiTask/'+obj.start+'/'+obj.end+'/'+obj.empId)
         }
             function buildTable(tableName, column, router){
                     let table = $(tableName).DataTable({
